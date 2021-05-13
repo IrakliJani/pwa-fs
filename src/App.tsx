@@ -63,7 +63,15 @@ const App = () => {
     setNavigationStack([...navigationStack, directoryHandle])
   }
 
-  const handleDownloadFile = () => {}
+  const handleDownloadFile = async (fileHandle: FileSystemFileHandle) => {
+    const file: File = await fileHandle.getFile()
+
+    const link = document.createElement('a')
+    const url = window.URL.createObjectURL(file)
+    link.href = url
+    link.setAttribute('download', fileHandle.name)
+    link.click()
+  }
 
   const currentNavigationStackIndex = navigationStack.findIndex((d) => d === currentDirectoryHandle)
   const parentDirectoryHandle = navigationStack[currentNavigationStackIndex - 1]
@@ -134,7 +142,7 @@ const App = () => {
                   onClick={
                     entry.kind === 'directory'
                       ? () => handleChangeDirectory(entry)
-                      : handleDownloadFile
+                      : () => handleDownloadFile(entry)
                   }
                 >
                   <ListIcon as={entry.kind === 'directory' ? FiFolder : FiFile} color="red.500" />
