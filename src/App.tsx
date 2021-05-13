@@ -108,24 +108,43 @@ const App = () => {
             </>
           )}
 
-          {currentDirectoryEntries.map((entry) => (
-            <React.Fragment key={entry.kind + '-' + entry.name}>
-              <ListItem
-                {...listStyleProps}
-                onClick={
-                  entry.kind === 'directory'
-                    ? () => handleChangeDirectory(entry)
-                    : handleDownloadFile
-                }
-              >
-                <ListIcon as={entry.kind === 'directory' ? FiFolder : FiFile} color="red.500" />
+          {currentDirectoryEntries
+            .sort((aEntry, bEntry) => {
+              const localeResult = aEntry.name.localeCompare(
+                bEntry.name,
+                navigator.languages[0] || navigator.language,
+                {
+                  numeric: true,
+                },
+              )
 
-                {entry.name}
-              </ListItem>
+              if (aEntry.kind === bEntry.kind) {
+                return 0 + localeResult
+              } else if (aEntry.kind === 'directory' && bEntry.kind === 'file') {
+                return -10 + localeResult
+              } else {
+                return 10 + localeResult
+              }
+            })
 
-              <Divider />
-            </React.Fragment>
-          ))}
+            .map((entry) => (
+              <React.Fragment key={entry.kind + '-' + entry.name}>
+                <ListItem
+                  {...listStyleProps}
+                  onClick={
+                    entry.kind === 'directory'
+                      ? () => handleChangeDirectory(entry)
+                      : handleDownloadFile
+                  }
+                >
+                  <ListIcon as={entry.kind === 'directory' ? FiFolder : FiFile} color="red.500" />
+
+                  {entry.name}
+                </ListItem>
+
+                <Divider />
+              </React.Fragment>
+            ))}
         </List>
       )}
     </Container>
