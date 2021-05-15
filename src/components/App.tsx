@@ -13,6 +13,7 @@ import {
   Divider,
   Link,
   Box,
+  ListProps,
 } from '@chakra-ui/react'
 import { FiFolder, FiFile, FiCornerLeftUp, FiChevronRight, FiChevronDown } from 'react-icons/fi'
 
@@ -123,9 +124,11 @@ const App = () => {
       </Flex>
 
       {currentDirectoryHandle && (
-        <List>
-          <Divider />
-
+        <EntryList
+          entries={currentDirectoryEntries}
+          onDirectoryChange={handleChangeDirectory}
+          onFileClick={handleDownloadFile}
+        >
           {rootDirectoryHandle !== currentDirectoryHandle && (
             <>
               <ListItem
@@ -140,42 +143,65 @@ const App = () => {
               <Divider />
             </>
           )}
-
-          {currentDirectoryEntries
-            .sort((aEntry, bEntry) => {
-              const localeResult = aEntry.name.localeCompare(
-                bEntry.name,
-                navigator.languages[0] || navigator.language,
-                {
-                  numeric: true,
-                },
-              )
-
-              if (aEntry.kind === bEntry.kind) {
-                return 0 + localeResult
-              } else if (aEntry.kind === 'directory' && bEntry.kind === 'file') {
-                return -10 + localeResult
-              } else {
-                return 10 + localeResult
-              }
-            })
-            .map((entry) => (
-              <React.Fragment key={entry.kind + '-' + entry.name}>
-                <EntryItem
-                  entry={entry}
-                  name={entry.name}
-                  kind={entry.kind}
-                  entries={entry.kind === 'directory' ? getDirectoryEntries(entry) : null}
-                  onDirectoryChange={handleChangeDirectory}
-                  onFileClick={handleDownloadFile}
-                />
-
-                <Divider />
-              </React.Fragment>
-            ))}
-        </List>
+        </EntryList>
       )}
     </Container>
+  )
+}
+
+interface EntryListProps extends ListProps {
+  children?: React.ReactNode
+  entries: FileSystemHandle[]
+  onDirectoryChange: (dir: FileSystemDirectoryHandle) => void
+  onFileClick: (file: FileSystemFileHandle) => void
+}
+
+const EntryList: React.FunctionComponent<EntryListProps> = ({
+  children,
+  entries,
+  onDirectoryChange,
+  onFileClick,
+  ...listProps
+}) => {
+  return (
+    <List {...listProps}>
+      <Divider />
+
+      {children}
+
+      {entries
+        .sort((aEntry, bEntry) => {
+          const localeResult = aEntry.name.localeCompare(
+            bEntry.name,
+            navigator.languages[0] || navigator.language,
+            {
+              numeric: true,
+            },
+          )
+
+          if (aEntry.kind === bEntry.kind) {
+            return 0 + localeResult
+          } else if (aEntry.kind === 'directory' && bEntry.kind === 'file') {
+            return -10 + localeResult
+          } else {
+            return 10 + localeResult
+          }
+        })
+        .map((entry) => (
+          <React.Fragment key={entry.kind + '-' + entry.name}>
+            <EntryItem
+              entry={entry}
+              name={entry.name}
+              kind={entry.kind}
+              entries={entry.kind === 'directory' ? getDirectoryEntries(entry) : null}
+              onDirectoryChange={onDirectoryChange}
+              onFileClick={onFileClick}
+            />
+
+            <Divider />
+          </React.Fragment>
+        ))}
+    </List>
   )
 }
 
@@ -199,11 +225,14 @@ const EntryItem: React.FunctionComponent<EntryItemProps> = ({
   const parentEntryState = useEntry()
   const [isOpen, setOpen] = React.useState<boolean>(parentEntryState.isExpanded)
   const [isExpanded, setExpanded] = React.useState<boolean>(false)
-  const [subItems, setSubItems] = React.useState<FileSystemHandle[]>([])
+  const [subEntries, setSubItems] = React.useState<FileSystemHandle[]>([])
   const [showButton, setShowbutton] = React.useState<boolean>(false)
 
   const handleOpen = () => {
     setOpen(!isOpen)
+    if (!isOpen) {
+      setExpanded(false)
+    }
   }
 
   const handleExpand = () => {
@@ -265,41 +294,13 @@ const EntryItem: React.FunctionComponent<EntryItemProps> = ({
         )}
       </ListItem>
 
-      {subItems.length > 0 && (
-        <List marginLeft={6}>
-          {subItems
-            .sort((aEntry, bEntry) => {
-              const localeResult = aEntry.name.localeCompare(
-                bEntry.name,
-                navigator.languages[0] || navigator.language,
-                {
-                  numeric: true,
-                },
-              )
-
-              if (aEntry.kind === bEntry.kind) {
-                return 0 + localeResult
-              } else if (aEntry.kind === 'directory' && bEntry.kind === 'file') {
-                return -10 + localeResult
-              } else {
-                return 10 + localeResult
-              }
-            })
-            .map((subItem) => (
-              <React.Fragment key={subItem.kind + '-' + subItem.name}>
-                <Divider />
-
-                <EntryItem
-                  entry={subItem}
-                  name={subItem.name}
-                  kind={subItem.kind}
-                  entries={subItem.kind === 'directory' ? getDirectoryEntries(subItem) : null}
-                  onDirectoryChange={onDirectoryChange}
-                  onFileClick={onFileClick}
-                />
-              </React.Fragment>
-            ))}
-        </List>
+      {subEntries.length > 0 && (
+        <EntryList
+          marginLeft={6}
+          entries={subEntries}
+          onDirectoryChange={onDirectoryChange}
+          onFileClick={onFileClick}
+        />
       )}
     </EntryContextProvider>
   )
