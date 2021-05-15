@@ -7,3 +7,11 @@ export const getDirectoryEntries = async (directoryHandle: FileSystemDirectoryHa
 
   return entries
 }
+
+export const downloadFile = (file: File, name: string) => {
+  const link = document.createElement('a')
+  const url = window.URL.createObjectURL(file)
+  link.href = url
+  link.setAttribute('download', name)
+  link.click()
+}
