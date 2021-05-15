@@ -139,7 +139,7 @@ const App = () => {
       </Flex>
 
       {currentDirectoryHandle && (
-        <List marginY={2} spacing={1}>
+        <List>
           <Divider />
 
           {rootDirectoryHandle !== currentDirectoryHandle && (
@@ -262,7 +262,7 @@ const EntryItem: React.FunctionComponent<EntryItemProps> = ({
       </ListItem>
 
       {subItems.length > 0 && (
-        <Box marginLeft={6}>
+        <List marginLeft={6}>
           {subItems.map((subItem) => (
             <React.Fragment key={subItem.kind + '-' + subItem.name}>
               <Divider />
@@ -277,7 +277,7 @@ const EntryItem: React.FunctionComponent<EntryItemProps> = ({
               />
             </React.Fragment>
           ))}
-        </Box>
+        </List>
       )}
     </Box>
   )
