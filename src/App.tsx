@@ -195,6 +195,34 @@ const App = () => {
   )
 }
 
+type EntryContextType = {
+  isExpanded: boolean
+}
+
+const EntryContext = React.createContext<EntryContextType>({
+  isExpanded: false,
+})
+
+type EntryContextProviderProps = {
+  value: EntryContextType
+  children: React.ReactNode
+}
+
+const EntryContextProvider: React.FunctionComponent<EntryContextProviderProps> = ({
+  value,
+  children,
+}) => {
+  return <EntryContext.Provider value={value}>{children}</EntryContext.Provider>
+}
+
+const useEntry = () => {
+  const entry = React.useContext(EntryContext)
+
+  if (!entry) throw new Error('EntryContextProvider is missing')
+
+  return entry
+}
+
 type EntryItemProps = {
   entry: FileSystemHandle
   name: string
@@ -206,43 +234,55 @@ type EntryItemProps = {
 
 const EntryItem: React.FunctionComponent<EntryItemProps> = ({
   entry,
-  onDirectoryChange,
-  onFileClick,
   name,
   kind,
   entries,
+  onDirectoryChange,
+  onFileClick,
 }) => {
+  const parentEntryState = useEntry()
+  const [isOpen, setOpen] = React.useState<boolean>(parentEntryState.isExpanded)
   const [isExpanded, setExpanded] = React.useState<boolean>(false)
   const [subItems, setSubItems] = React.useState<FileSystemHandle[]>([])
+  const [showButton, setShowbutton] = React.useState<boolean>(false)
 
-  const handleChevronToggle = () => {
-    setExpanded(!isExpanded)
+  const handleOpen = () => {
+    setOpen(!isOpen)
+  }
+
+  const handleExpand = () => {
+    setOpen(true)
+    setExpanded(true)
   }
 
   React.useEffect(() => {
     if (!entries) return
 
-    if (isExpanded) {
+    if (isOpen) {
       ;(async function getEntries() {
         setSubItems(await entries!)
       })()
     } else {
       setSubItems([])
     }
-  }, [isExpanded, setSubItems, entries])
+  }, [isOpen, setSubItems, entries])
 
   return (
-    <Box>
-      <ListItem {...listStyleProps}>
+    <EntryContextProvider value={{ isExpanded: isExpanded || parentEntryState.isExpanded }}>
+      <ListItem
+        {...listStyleProps}
+        onMouseEnter={() => setShowbutton(true)}
+        onMouseLeave={() => setShowbutton(false)}
+      >
         {kind === 'directory' ? (
           <ListIcon
-            as={isExpanded ? FiChevronDown : FiChevronRight}
+            as={isOpen ? FiChevronDown : FiChevronRight}
             color="gray.500"
             cursor="pointer"
             _hover={{
               backgroundColor: 'gray.100',
             }}
-            onClick={handleChevronToggle}
+            onClick={handleOpen}
           />
         ) : (
           <Box boxSize={3.5} marginInlineEnd={2} />
@@ -259,6 +299,14 @@ const EntryItem: React.FunctionComponent<EntryItemProps> = ({
         >
           {name}
         </Link>
+
+        <Spacer />
+
+        {kind === 'directory' && showButton && !isOpen && (
+          <Button size="xs" onClick={handleExpand}>
+            Expand
+          </Button>
+        )}
       </ListItem>
 
       {subItems.length > 0 && (
@@ -279,7 +327,7 @@ const EntryItem: React.FunctionComponent<EntryItemProps> = ({
           ))}
         </List>
       )}
-    </Box>
+    </EntryContextProvider>
   )
 }
 
