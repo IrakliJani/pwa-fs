@@ -11,6 +11,17 @@ import {
   ListItem,
   ListIcon,
   Divider,
+  Popover,
+  PopoverTrigger,
+  Portal,
+  PopoverContent,
+  PopoverArrow,
+  PopoverCloseButton,
+  PopoverBody,
+  PopoverFooter,
+  InputGroup,
+  Input,
+  InputRightElement,
 } from '@chakra-ui/react'
 import { FiFolder, FiFile, FiCornerLeftUp } from 'react-icons/fi'
 
@@ -63,6 +74,8 @@ const App = () => {
     setNavigationStack([...navigationStack, directoryHandle])
   }
 
+  const handleGoTo = () => {}
+
   const handleDownloadFile = async (fileHandle: FileSystemFileHandle) => {
     const file: File = await fileHandle.getFile()
 
@@ -96,6 +109,14 @@ const App = () => {
         <Button colorScheme="blue" onClick={handleOpenFolderDialog}>
           Open Folder
         </Button>
+
+        {rootDirectoryHandle && (
+          <GoTo onClick={handleGoTo}>
+            <Button variant="outline" colorScheme="blue" marginLeft={2}>
+              Go To...
+            </Button>
+          </GoTo>
+        )}
       </Flex>
 
       {currentDirectoryHandle && (
@@ -156,6 +177,37 @@ const App = () => {
         </List>
       )}
     </Container>
+  )
+}
+
+type GoToProps = {
+  children: React.ReactNode
+  onClick: () => void
+}
+
+const GoTo: React.FunctionComponent<GoToProps> = ({ children, onClick }) => {
+  return (
+    <Popover placement="bottom-end">
+      <PopoverTrigger>{children}</PopoverTrigger>
+
+      <Portal>
+        <PopoverContent>
+          <PopoverArrow />
+
+          <PopoverBody>
+            <InputGroup size="md">
+              <Input paddingRight="4.5rem" placeholder="Enter folder path" />
+
+              <InputRightElement width="4.5rem">
+                <Button height="1.75rem" size="sm" onClick={onClick}>
+                  Go
+                </Button>
+              </InputRightElement>
+            </InputGroup>
+          </PopoverBody>
+        </PopoverContent>
+      </Portal>
+    </Popover>
   )
 }
 
