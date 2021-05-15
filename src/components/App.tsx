@@ -1,6 +1,5 @@
 import React from 'react'
 import {
-  useToast,
   Flex,
   Spacer,
   Container,
@@ -12,29 +11,14 @@ import {
   ListItem,
   ListIcon,
   Divider,
-  Popover,
-  PopoverTrigger,
-  Portal,
-  PopoverContent,
-  PopoverArrow,
-  PopoverBody,
-  InputGroup,
-  Input,
-  InputRightElement,
   Link,
   Box,
 } from '@chakra-ui/react'
 import { FiFolder, FiFile, FiCornerLeftUp, FiChevronRight, FiChevronDown } from 'react-icons/fi'
 
-const getDirectoryEntries = async (directoryHandle: FileSystemDirectoryHandle) => {
-  const entries: Array<FileSystemHandle> = []
-
-  for await (let [, handler] of directoryHandle.entries()) {
-    entries.push(handler)
-  }
-
-  return entries
-}
+import { EntryContextProvider, useEntry } from './../providers/entry'
+import { getDirectoryEntries } from './../utils'
+import GoTo from './GoTo'
 
 const App = () => {
   const [rootDirectoryHandle, setRootDirectoryHandle] = React.useState<FileSystemDirectoryHandle>()
@@ -195,34 +179,6 @@ const App = () => {
   )
 }
 
-type EntryContextType = {
-  isExpanded: boolean
-}
-
-const EntryContext = React.createContext<EntryContextType>({
-  isExpanded: false,
-})
-
-type EntryContextProviderProps = {
-  value: EntryContextType
-  children: React.ReactNode
-}
-
-const EntryContextProvider: React.FunctionComponent<EntryContextProviderProps> = ({
-  value,
-  children,
-}) => {
-  return <EntryContext.Provider value={value}>{children}</EntryContext.Provider>
-}
-
-const useEntry = () => {
-  const entry = React.useContext(EntryContext)
-
-  if (!entry) throw new Error('EntryContextProvider is missing')
-
-  return entry
-}
-
 type EntryItemProps = {
   entry: FileSystemHandle
   name: string
@@ -311,98 +267,41 @@ const EntryItem: React.FunctionComponent<EntryItemProps> = ({
 
       {subItems.length > 0 && (
         <List marginLeft={6}>
-          {subItems.map((subItem) => (
-            <React.Fragment key={subItem.kind + '-' + subItem.name}>
-              <Divider />
+          {subItems
+            .sort((aEntry, bEntry) => {
+              const localeResult = aEntry.name.localeCompare(
+                bEntry.name,
+                navigator.languages[0] || navigator.language,
+                {
+                  numeric: true,
+                },
+              )
 
-              <EntryItem
-                entry={subItem}
-                name={subItem.name}
-                kind={subItem.kind}
-                entries={subItem.kind === 'directory' ? getDirectoryEntries(subItem) : null}
-                onDirectoryChange={onDirectoryChange}
-                onFileClick={onFileClick}
-              />
-            </React.Fragment>
-          ))}
+              if (aEntry.kind === bEntry.kind) {
+                return 0 + localeResult
+              } else if (aEntry.kind === 'directory' && bEntry.kind === 'file') {
+                return -10 + localeResult
+              } else {
+                return 10 + localeResult
+              }
+            })
+            .map((subItem) => (
+              <React.Fragment key={subItem.kind + '-' + subItem.name}>
+                <Divider />
+
+                <EntryItem
+                  entry={subItem}
+                  name={subItem.name}
+                  kind={subItem.kind}
+                  entries={subItem.kind === 'directory' ? getDirectoryEntries(subItem) : null}
+                  onDirectoryChange={onDirectoryChange}
+                  onFileClick={onFileClick}
+                />
+              </React.Fragment>
+            ))}
         </List>
       )}
     </EntryContextProvider>
-  )
-}
-
-type GoToProps = {
-  children: React.ReactNode
-  onSubmit: (pathString: string) => Promise<void>
-}
-
-const GoTo: React.FunctionComponent<GoToProps> = ({ children, onSubmit }) => {
-  const initialFocusRef = React.useRef<HTMLInputElement>(null)
-  const [value, setValue] = React.useState<string>('')
-
-  const toast = useToast()
-
-  const handleChange = (event: React.FormEvent<HTMLInputElement>) => {
-    setValue(event.currentTarget.value)
-  }
-
-  const handleSubmit = async (value: string) => {
-    setValue('')
-
-    try {
-      await onSubmit(value)
-    } catch (e) {
-      if (e instanceof Error) {
-        toast({
-          title: `Error: ${e.message}`,
-          status: 'error',
-        })
-      } else {
-        console.error(e)
-      }
-    }
-  }
-
-  return (
-    <Popover placement="bottom-end" initialFocusRef={initialFocusRef}>
-      {({ onClose }) => (
-        <>
-          <PopoverTrigger>{children}</PopoverTrigger>
-
-          <Portal>
-            <PopoverContent>
-              <PopoverArrow />
-
-              <PopoverBody>
-                <InputGroup size="md">
-                  <Input
-                    ref={initialFocusRef}
-                    paddingRight="4.5rem"
-                    placeholder="Enter folder path"
-                    value={value}
-                    onChange={handleChange}
-                  />
-
-                  <InputRightElement width="4.5rem">
-                    <Button
-                      colorScheme="blue"
-                      height="1.75rem"
-                      size="sm"
-                      onClick={() => {
-                        handleSubmit(value)
-                        onClose()
-                      }}
-                    >
-                      Go
-                    </Button>
-                  </InputRightElement>
-                </InputGroup>
-              </PopoverBody>
-            </PopoverContent>
-          </Portal>
-        </>
-      )}
-    </Popover>
   )
 }
 

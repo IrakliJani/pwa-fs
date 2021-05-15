@@ -1,9 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import App from './App'
+import { ChakraProvider } from '@chakra-ui/react'
+
 import * as serviceWorkerRegistration from './serviceWorkerRegistration'
 import reportWebVitals from './reportWebVitals'
-import { ChakraProvider } from '@chakra-ui/react'
+import App from './components/App'
 
 ReactDOM.render(
   <React.StrictMode>
