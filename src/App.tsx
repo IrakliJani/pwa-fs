@@ -1,5 +1,6 @@
 import React from 'react'
 import {
+  useToast,
   Flex,
   Spacer,
   Container,
@@ -16,16 +17,16 @@ import {
   Portal,
   PopoverContent,
   PopoverArrow,
-  PopoverCloseButton,
   PopoverBody,
-  PopoverFooter,
   InputGroup,
   Input,
   InputRightElement,
+  Link,
+  Box,
 } from '@chakra-ui/react'
-import { FiFolder, FiFile, FiCornerLeftUp } from 'react-icons/fi'
+import { FiFolder, FiFile, FiCornerLeftUp, FiChevronRight, FiChevronDown } from 'react-icons/fi'
 
-const getDirectoryContent = async (directoryHandle: FileSystemDirectoryHandle) => {
+const getDirectoryEntries = async (directoryHandle: FileSystemDirectoryHandle) => {
   const entries: Array<FileSystemHandle> = []
 
   for await (let [, handler] of directoryHandle.entries()) {
@@ -55,7 +56,7 @@ const App = () => {
   }
 
   const cd = async (directoryHandle: FileSystemDirectoryHandle) => {
-    const entries = await getDirectoryContent(directoryHandle)
+    const entries = await getDirectoryEntries(directoryHandle)
 
     setCurrentDirectoryHandle(directoryHandle)
     setCurrentDirectoryEntries(entries)
@@ -70,11 +71,8 @@ const App = () => {
 
   const handleChangeDirectory = async (directoryHandle: FileSystemDirectoryHandle) => {
     await cd(directoryHandle)
-
     setNavigationStack([...navigationStack, directoryHandle])
   }
-
-  const handleGoTo = () => {}
 
   const handleDownloadFile = async (fileHandle: FileSystemFileHandle) => {
     const file: File = await fileHandle.getFile()
@@ -84,6 +82,27 @@ const App = () => {
     link.href = url
     link.setAttribute('download', fileHandle.name)
     link.click()
+  }
+
+  const handleGoTo = async (pathString: string) => {
+    const pathes = pathString.split('/').filter(Boolean)
+    let currentHandle = rootDirectoryHandle!
+    let stack = []
+
+    for (let path of pathes) {
+      const entries = await getDirectoryEntries(currentHandle)
+      const entry = entries.find((entry) => entry.kind === 'directory' && entry.name === path) as
+        | FileSystemDirectoryHandle
+        | undefined
+
+      if (!entry) throw new Error('path does not exist...')
+
+      currentHandle = entry
+      stack.push(entry)
+    }
+
+    await cd(currentHandle)
+    setNavigationStack([...navigationStack, ...stack])
   }
 
   const currentNavigationStackIndex = navigationStack.findIndex((d) => d === currentDirectoryHandle)
@@ -111,7 +130,7 @@ const App = () => {
         </Button>
 
         {rootDirectoryHandle && (
-          <GoTo onClick={handleGoTo}>
+          <GoTo onSubmit={handleGoTo}>
             <Button variant="outline" colorScheme="blue" marginLeft={2}>
               Go To...
             </Button>
@@ -127,6 +146,7 @@ const App = () => {
             <>
               <ListItem
                 {...listStyleProps}
+                cursor="pointer"
                 onClick={() => handleParentDirectoryNavigation(parentDirectoryHandle)}
               >
                 <ListIcon as={FiCornerLeftUp} color="red.500" />
@@ -155,21 +175,16 @@ const App = () => {
                 return 10 + localeResult
               }
             })
-
             .map((entry) => (
               <React.Fragment key={entry.kind + '-' + entry.name}>
-                <ListItem
-                  {...listStyleProps}
-                  onClick={
-                    entry.kind === 'directory'
-                      ? () => handleChangeDirectory(entry)
-                      : () => handleDownloadFile(entry)
-                  }
-                >
-                  <ListIcon as={entry.kind === 'directory' ? FiFolder : FiFile} color="red.500" />
-
-                  {entry.name}
-                </ListItem>
+                <EntryItem
+                  entry={entry}
+                  name={entry.name}
+                  kind={entry.kind}
+                  entries={entry.kind === 'directory' ? getDirectoryEntries(entry) : null}
+                  onDirectoryChange={handleChangeDirectory}
+                  onFileClick={handleDownloadFile}
+                />
 
                 <Divider />
               </React.Fragment>
@@ -180,42 +195,175 @@ const App = () => {
   )
 }
 
-type GoToProps = {
-  children: React.ReactNode
-  onClick: () => void
+type EntryItemProps = {
+  entry: FileSystemHandle
+  name: string
+  kind: string
+  entries: Promise<FileSystemHandle[]> | null
+  onDirectoryChange: (dir: FileSystemDirectoryHandle) => void
+  onFileClick: (file: FileSystemFileHandle) => void
 }
 
-const GoTo: React.FunctionComponent<GoToProps> = ({ children, onClick }) => {
+const EntryItem: React.FunctionComponent<EntryItemProps> = ({
+  entry,
+  onDirectoryChange,
+  onFileClick,
+  name,
+  kind,
+  entries,
+}) => {
+  const [isExpanded, setExpanded] = React.useState<boolean>(false)
+  const [subItems, setSubItems] = React.useState<FileSystemHandle[]>([])
+
+  const handleChevronToggle = () => {
+    setExpanded(!isExpanded)
+  }
+
+  React.useEffect(() => {
+    if (!entries) return
+
+    if (isExpanded) {
+      ;(async function getEntries() {
+        setSubItems(await entries!)
+      })()
+    } else {
+      setSubItems([])
+    }
+  }, [isExpanded, setSubItems, entries])
+
   return (
-    <Popover placement="bottom-end">
-      <PopoverTrigger>{children}</PopoverTrigger>
+    <Box>
+      <ListItem {...listStyleProps}>
+        {kind === 'directory' ? (
+          <ListIcon
+            as={isExpanded ? FiChevronDown : FiChevronRight}
+            color="gray.500"
+            cursor="pointer"
+            _hover={{
+              backgroundColor: 'gray.100',
+            }}
+            onClick={handleChevronToggle}
+          />
+        ) : (
+          <Box boxSize={3.5} marginInlineEnd={2} />
+        )}
 
-      <Portal>
-        <PopoverContent>
-          <PopoverArrow />
+        <ListIcon as={kind === 'directory' ? FiFolder : FiFile} color="red.500" />
 
-          <PopoverBody>
-            <InputGroup size="md">
-              <Input paddingRight="4.5rem" placeholder="Enter folder path" />
+        <Link
+          onClick={
+            kind === 'directory'
+              ? () => onDirectoryChange(entry as FileSystemDirectoryHandle)
+              : () => onFileClick(entry as FileSystemFileHandle)
+          }
+        >
+          {name}
+        </Link>
+      </ListItem>
 
-              <InputRightElement width="4.5rem">
-                <Button height="1.75rem" size="sm" onClick={onClick}>
-                  Go
-                </Button>
-              </InputRightElement>
-            </InputGroup>
-          </PopoverBody>
-        </PopoverContent>
-      </Portal>
+      {subItems.length > 0 && (
+        <Box marginLeft={6}>
+          {subItems.map((subItem) => (
+            <React.Fragment key={subItem.kind + '-' + subItem.name}>
+              <Divider />
+
+              <EntryItem
+                entry={subItem}
+                name={subItem.name}
+                kind={subItem.kind}
+                entries={subItem.kind === 'directory' ? getDirectoryEntries(subItem) : null}
+                onDirectoryChange={onDirectoryChange}
+                onFileClick={onFileClick}
+              />
+            </React.Fragment>
+          ))}
+        </Box>
+      )}
+    </Box>
+  )
+}
+
+type GoToProps = {
+  children: React.ReactNode
+  onSubmit: (pathString: string) => Promise<void>
+}
+
+const GoTo: React.FunctionComponent<GoToProps> = ({ children, onSubmit }) => {
+  const initialFocusRef = React.useRef<HTMLInputElement>(null)
+  const [value, setValue] = React.useState<string>('')
+
+  const toast = useToast()
+
+  const handleChange = (event: React.FormEvent<HTMLInputElement>) => {
+    setValue(event.currentTarget.value)
+  }
+
+  const handleSubmit = async (value: string) => {
+    setValue('')
+
+    try {
+      await onSubmit(value)
+    } catch (e) {
+      if (e instanceof Error) {
+        toast({
+          title: `Error: ${e.message}`,
+          status: 'error',
+        })
+      } else {
+        console.error(e)
+      }
+    }
+  }
+
+  return (
+    <Popover placement="bottom-end" initialFocusRef={initialFocusRef}>
+      {({ onClose }) => (
+        <>
+          <PopoverTrigger>{children}</PopoverTrigger>
+
+          <Portal>
+            <PopoverContent>
+              <PopoverArrow />
+
+              <PopoverBody>
+                <InputGroup size="md">
+                  <Input
+                    ref={initialFocusRef}
+                    paddingRight="4.5rem"
+                    placeholder="Enter folder path"
+                    value={value}
+                    onChange={handleChange}
+                  />
+
+                  <InputRightElement width="4.5rem">
+                    <Button
+                      colorScheme="blue"
+                      height="1.75rem"
+                      size="sm"
+                      onClick={() => {
+                        handleSubmit(value)
+                        onClose()
+                      }}
+                    >
+                      Go
+                    </Button>
+                  </InputRightElement>
+                </InputGroup>
+              </PopoverBody>
+            </PopoverContent>
+          </Portal>
+        </>
+      )}
     </Popover>
   )
 }
 
 const listStyleProps = {
+  display: 'flex',
+  alignItems: 'center',
   borderRadius: 'md',
-  paddingX: 3,
-  paddingY: 2,
-  cursor: 'pointer',
+  paddingX: 2,
+  paddingY: 1,
   _hover: {
     background: 'white',
     color: 'red.500',
