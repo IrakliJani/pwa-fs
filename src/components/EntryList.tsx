@@ -20,10 +20,10 @@ const EntryList: React.FunctionComponent<EntryListProps> = ({
 }) => {
   return (
     <List {...listProps}>
+      {children}
+
       {entries.length > 0 ? (
         <>
-          {children}
-
           {entries.sort(sortEntries).map((entry) => (
             <React.Fragment key={entry.kind + '-' + entry.name}>
               <ListItem>
