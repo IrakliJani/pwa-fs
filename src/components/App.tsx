@@ -1,4 +1,6 @@
 import React from 'react'
+import { action } from 'mobx'
+import { observer } from 'mobx-react'
 import {
   Flex,
   Box,
@@ -13,38 +15,41 @@ import {
 import { FiCornerLeftUp } from 'react-icons/fi'
 
 import { getDirectoryEntries, downloadFile } from './../utils'
+import Dir from './../stores/dir'
+import Navigation from './Navigation'
 import GoTo from './GoTo'
 import EntryList from './EntryList'
 import { listStyleProps } from './EntryItem'
-import Navigation from './Navigation'
 
-const App = () => {
-  const [rootDirectoryHandle, setRootDirectoryHandle] = React.useState<FileSystemDirectoryHandle>()
-  const [currentDirectoryHandle, setCurrentDirectoryHandle] =
-    React.useState<FileSystemDirectoryHandle>()
-  const [navigationStack, setNavigationStack] = React.useState<FileSystemDirectoryHandle[]>([])
-  const [currentDirectoryEntries, setCurrentDirectoryEntries] = React.useState<FileSystemHandle[]>(
-    [],
-  )
+type AppProps = {
+  dir: Dir
+}
+
+const App: React.FC<AppProps> = observer(({ dir }) => {
+  const cd = async (dirHandle: FileSystemDirectoryHandle) => {
+    dir.entries = await getDirectoryEntries(dirHandle)
+    dir.current = dirHandle
+  }
 
   const handleOpenFolderDialog = async () => {
-    const directoryHandle = await window.showDirectoryPicker()
-    setRootDirectoryHandle(directoryHandle)
+    const rootHandle = await window.showDirectoryPicker()
 
-    await cd(directoryHandle)
-    setNavigationStack([...navigationStack, directoryHandle])
+    await cd(rootHandle)
+    dir.root = rootHandle
+    dir.stack.push(rootHandle)
   }
 
   const handleGoTo = async (pathString: string) => {
     const pathes = pathString.split('/').filter(Boolean)
-    let currentHandle = rootDirectoryHandle!
-    let stack = []
+
+    let currentHandle = dir.root!
+    let stack = [currentHandle]
 
     for (let path of pathes) {
       const entries = await getDirectoryEntries(currentHandle)
-      const entry = entries.find((entry) => entry.kind === 'directory' && entry.name === path) as
-        | FileSystemDirectoryHandle
-        | undefined
+      const entry = entries
+        .filter((entry) => entry.kind === 'directory')
+        .find((entry) => entry.name === path) as FileSystemDirectoryHandle | undefined
 
       if (!entry) throw new Error('path does not exist...')
 
@@ -53,26 +58,19 @@ const App = () => {
     }
 
     await cd(currentHandle)
-    setNavigationStack([...navigationStack, ...stack])
+    dir.stack = stack
   }
 
-  const cd = async (directoryHandle: FileSystemDirectoryHandle) => {
-    const entries = await getDirectoryEntries(directoryHandle)
+  const handleParentDirectoryNavigation = async (dirHandle: FileSystemDirectoryHandle) => {
+    await cd(dirHandle)
 
-    setCurrentDirectoryHandle(directoryHandle)
-    setCurrentDirectoryEntries(entries)
+    const index = dir.stack.findIndex((d) => d === dirHandle)
+    dir.stack.splice(index + 1)
   }
 
-  const handleParentDirectoryNavigation = async (directoryHandle: FileSystemDirectoryHandle) => {
-    await cd(directoryHandle)
-
-    const index = navigationStack.findIndex((d) => d === directoryHandle)
-    setNavigationStack(navigationStack.slice(0, index + 1))
-  }
-
-  const handleChangeDirectory = async (directoryHandle: FileSystemDirectoryHandle) => {
-    await cd(directoryHandle)
-    setNavigationStack([...navigationStack, directoryHandle])
+  const handleChangeDirectory = async (dirHandle: FileSystemDirectoryHandle) => {
+    await cd(dirHandle)
+    dir.stack.push(dirHandle)
   }
 
   const handleDownloadFile = async (fileHandle: FileSystemFileHandle) => {
@@ -80,12 +78,12 @@ const App = () => {
     downloadFile(file, fileHandle.name)
   }
 
-  const currentNavigationStackIndex = navigationStack.findIndex((d) => d === currentDirectoryHandle)
-  const parentDirectoryHandle = navigationStack[currentNavigationStackIndex - 1]
+  const currentDirIndex = dir.stack.findIndex((d) => d === dir.current)
+  const parentDirHandle = dir.stack[currentDirIndex - 1]
 
   return (
     <Container maxW="100%" height="100vh" backgroundColor="yellow.50" overflow="hidden">
-      {!rootDirectoryHandle ? (
+      {!dir.root ? (
         <Flex height="inherit" alignItems="center" justifyContent="center" flexDirection="column">
           <Text textAlign="center">Click "Open Folder" Button to get started...</Text>
 
@@ -96,7 +94,7 @@ const App = () => {
       ) : (
         <Flex flexDirection="column" paddingY="5" height="inherit">
           <Flex alignItems="center">
-            <Navigation entries={navigationStack} onNavigate={handleParentDirectoryNavigation} />
+            <Navigation entries={dir.stack} onNavigate={handleParentDirectoryNavigation} />
 
             <Spacer />
 
@@ -109,18 +107,18 @@ const App = () => {
 
           <Box overflowY="scroll" flex="1" marginY={5}>
             <EntryList
-              entries={currentDirectoryEntries}
+              entries={dir.entries}
               onDirectoryChange={handleChangeDirectory}
               onFileClick={handleDownloadFile}
             >
-              {rootDirectoryHandle !== currentDirectoryHandle && (
+              {dir.root !== dir.current && (
                 <>
                   <Divider />
 
                   <ListItem
                     {...listStyleProps}
                     cursor="pointer"
-                    onClick={() => handleParentDirectoryNavigation(parentDirectoryHandle)}
+                    onClick={() => handleParentDirectoryNavigation(parentDirHandle)}
                   >
                     <ListIcon as={FiCornerLeftUp} color="red.500" />
                     ..
@@ -135,6 +133,6 @@ const App = () => {
       )}
     </Container>
   )
-}
+})
 
 export default App

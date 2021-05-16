@@ -14,7 +14,7 @@ type EntryItemProps = {
   onFileClick: (file: FileSystemFileHandle) => void
 }
 
-const EntryItem: React.FunctionComponent<EntryItemProps> = ({
+const EntryItem: React.FC<EntryItemProps> = ({
   entry,
   name,
   kind,

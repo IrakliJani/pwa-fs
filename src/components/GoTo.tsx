@@ -19,7 +19,7 @@ type GoToProps = {
   onSubmit: (pathString: string) => Promise<void>
 }
 
-const GoTo: React.FunctionComponent<GoToProps> = ({ children, onSubmit }) => {
+const GoTo: React.FC<GoToProps> = ({ children, onSubmit }) => {
   const initialFocusRef = React.useRef<HTMLInputElement>(null)
   const [value, setValue] = React.useState<string>('')
 

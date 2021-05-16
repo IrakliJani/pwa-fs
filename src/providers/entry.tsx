@@ -13,10 +13,7 @@ type EntryContextProviderProps = {
   children: React.ReactNode
 }
 
-const EntryContextProvider: React.FunctionComponent<EntryContextProviderProps> = ({
-  isExpanded,
-  children,
-}) => {
+const EntryContextProvider: React.FC<EntryContextProviderProps> = ({ isExpanded, children }) => {
   return isExpanded !== undefined ? (
     <EntryContext.Provider value={{ isExpanded }}>{children}</EntryContext.Provider>
   ) : (

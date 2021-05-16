@@ -1,12 +1,13 @@
 import React from 'react'
+import { observer } from 'mobx-react'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, Text } from '@chakra-ui/react'
 
 type NavigationProps = {
   entries: FileSystemDirectoryHandle[]
-  onNavigate: (directoryHandle: FileSystemDirectoryHandle) => void
+  onNavigate: (dirHandle: FileSystemDirectoryHandle) => void
 }
 
-const Navigation: React.FunctionComponent<NavigationProps> = ({ entries, onNavigate }) => {
+const Navigation: React.FC<NavigationProps> = observer(({ entries, onNavigate }) => {
   return (
     <>
       <Text marginRight={2}>pwd:</Text>
@@ -20,6 +21,6 @@ const Navigation: React.FunctionComponent<NavigationProps> = ({ entries, onNavig
       </Breadcrumb>
     </>
   )
-}
+})
 
 export default Navigation

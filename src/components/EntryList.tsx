@@ -11,7 +11,7 @@ interface EntryListProps extends ListProps {
   onFileClick: (file: FileSystemFileHandle) => void
 }
 
-const EntryList: React.FunctionComponent<EntryListProps> = ({
+const EntryList: React.FC<EntryListProps> = ({
   children,
   entries,
   onDirectoryChange,
