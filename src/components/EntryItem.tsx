@@ -24,15 +24,16 @@ const EntryItem: React.FunctionComponent<EntryItemProps> = ({
 }) => {
   const parentEntryState = useEntry()
   const [isOpen, setOpen] = React.useState<boolean>(parentEntryState.isExpanded)
-  const [isExpanded, setExpanded] = React.useState<boolean>(false)
+  const [isExpanded, setExpanded] = React.useState<boolean>()
   const [subEntries, setSubItems] = React.useState<FileSystemHandle[] | null>(null)
   const [showButton, setShowbutton] = React.useState<boolean>(false)
 
   const handleOpen = () => {
-    setOpen(!isOpen)
     if (!isOpen) {
       setExpanded(false)
     }
+
+    setOpen(!isOpen)
   }
 
   const handleExpand = () => {
@@ -53,7 +54,7 @@ const EntryItem: React.FunctionComponent<EntryItemProps> = ({
   }, [isOpen, setSubItems, entries])
 
   return (
-    <EntryContextProvider value={{ isExpanded: isExpanded || parentEntryState.isExpanded }}>
+    <EntryContextProvider isExpanded={isExpanded}>
       <ListItem
         {...listStyleProps}
         onMouseEnter={() => setShowbutton(true)}
@@ -87,7 +88,7 @@ const EntryItem: React.FunctionComponent<EntryItemProps> = ({
 
         <Spacer />
 
-        {kind === 'directory' && showButton && !isOpen && (
+        {kind === 'directory' && showButton && !isExpanded && !isOpen && (
           <Button size="xs" onClick={handleExpand}>
             Expand
           </Button>

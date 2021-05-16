@@ -9,15 +9,19 @@ const EntryContext = React.createContext<EntryContextType>({
 })
 
 type EntryContextProviderProps = {
-  value: EntryContextType
+  isExpanded?: boolean
   children: React.ReactNode
 }
 
 const EntryContextProvider: React.FunctionComponent<EntryContextProviderProps> = ({
-  value,
+  isExpanded,
   children,
 }) => {
-  return <EntryContext.Provider value={value}>{children}</EntryContext.Provider>
+  return isExpanded !== undefined ? (
+    <EntryContext.Provider value={{ isExpanded }}>{children}</EntryContext.Provider>
+  ) : (
+    <>{children}</>
+  )
 }
 
 const useEntry = () => {
