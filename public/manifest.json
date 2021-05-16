@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Local File Explorer",
+  "name": "Local File Explorer",
+  "description": "Local File Explorer using File System Access API",
   "icons": [
     {
       "src": "favicon.ico",
