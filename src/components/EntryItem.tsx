@@ -1,6 +1,15 @@
 import React from 'react'
-import { ListItem, ListIcon, Box, Link, Spacer, Button } from '@chakra-ui/react'
-
+import {
+  ListItem,
+  ListIcon,
+  Box,
+  Link,
+  Spacer,
+  Button,
+  Spinner,
+  Text,
+  Flex,
+} from '@chakra-ui/react'
 import { FiFolder, FiFile, FiChevronRight, FiChevronDown } from 'react-icons/fi'
 
 import { EntryContextProvider, useEntry } from './../providers/entry'
@@ -26,7 +35,7 @@ const EntryItem: React.FunctionComponent<EntryItemProps> = ({
   const parentEntryState = useEntry()
   const [isOpen, setOpen] = React.useState<boolean>(parentEntryState.isExpanded)
   const [isExpanded, setExpanded] = React.useState<boolean>(false)
-  const [subEntries, setSubItems] = React.useState<FileSystemHandle[]>([])
+  const [subEntries, setSubItems] = React.useState<FileSystemHandle[] | null>(null)
   const [showButton, setShowbutton] = React.useState<boolean>(false)
 
   const handleOpen = () => {
@@ -49,7 +58,7 @@ const EntryItem: React.FunctionComponent<EntryItemProps> = ({
         setSubItems(await entries!)
       })()
     } else {
-      setSubItems([])
+      setSubItems(null)
     }
   }, [isOpen, setSubItems, entries])
 
@@ -95,14 +104,19 @@ const EntryItem: React.FunctionComponent<EntryItemProps> = ({
         )}
       </ListItem>
 
-      {subEntries.length > 0 && (
-        <EntryList
-          marginLeft={6}
-          entries={subEntries}
-          onDirectoryChange={onDirectoryChange}
-          onFileClick={onFileClick}
-        />
-      )}
+      {kind === 'directory' &&
+        (subEntries && isOpen ? (
+          <EntryList
+            marginLeft={6}
+            entries={subEntries}
+            onDirectoryChange={onDirectoryChange}
+            onFileClick={onFileClick}
+          />
+        ) : !subEntries && isOpen ? (
+          <Flex justifyContent="center">
+            <Spinner size="sm" color="red.500" marginY={2} />
+          </Flex>
+        ) : null)}
     </EntryContextProvider>
   )
 }

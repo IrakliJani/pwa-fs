@@ -35,6 +35,27 @@ const App = () => {
     setNavigationStack([...navigationStack, directoryHandle])
   }
 
+  const handleGoTo = async (pathString: string) => {
+    const pathes = pathString.split('/').filter(Boolean)
+    let currentHandle = rootDirectoryHandle!
+    let stack = []
+
+    for (let path of pathes) {
+      const entries = await getDirectoryEntries(currentHandle)
+      const entry = entries.find((entry) => entry.kind === 'directory' && entry.name === path) as
+        | FileSystemDirectoryHandle
+        | undefined
+
+      if (!entry) throw new Error('path does not exist...')
+
+      currentHandle = entry
+      stack.push(entry)
+    }
+
+    await cd(currentHandle)
+    setNavigationStack([...navigationStack, ...stack])
+  }
+
   const cd = async (directoryHandle: FileSystemDirectoryHandle) => {
     const entries = await getDirectoryEntries(directoryHandle)
 
@@ -59,33 +80,12 @@ const App = () => {
     downloadFile(file, fileHandle.name)
   }
 
-  const handleGoTo = async (pathString: string) => {
-    const pathes = pathString.split('/').filter(Boolean)
-    let currentHandle = rootDirectoryHandle!
-    let stack = []
-
-    for (let path of pathes) {
-      const entries = await getDirectoryEntries(currentHandle)
-      const entry = entries.find((entry) => entry.kind === 'directory' && entry.name === path) as
-        | FileSystemDirectoryHandle
-        | undefined
-
-      if (!entry) throw new Error('path does not exist...')
-
-      currentHandle = entry
-      stack.push(entry)
-    }
-
-    await cd(currentHandle)
-    setNavigationStack([...navigationStack, ...stack])
-  }
-
   const currentNavigationStackIndex = navigationStack.findIndex((d) => d === currentDirectoryHandle)
   const parentDirectoryHandle = navigationStack[currentNavigationStackIndex - 1]
 
   return (
     <Container paddingY="5" backgroundColor="yellow.50">
-      {!currentDirectoryHandle ? (
+      {!rootDirectoryHandle ? (
         <Box textAlign="center">
           <Text textAlign="center">Click "Open Folder" Button to get started...</Text>
 
@@ -93,15 +93,10 @@ const App = () => {
             Open Folder
           </Button>
         </Box>
-      ) : currentDirectoryEntries.length > 0 ? (
+      ) : (
         <>
           <Flex alignItems="center">
-            <Navigation
-              entries={navigationStack}
-              onNavigate={(directory: FileSystemDirectoryHandle) =>
-                handleParentDirectoryNavigation(directory)
-              }
-            />
+            <Navigation entries={navigationStack} onNavigate={handleParentDirectoryNavigation} />
 
             <Spacer />
 
@@ -136,8 +131,6 @@ const App = () => {
 
           <Divider />
         </>
-      ) : (
-        <Text textAlign="center">Directory is Empty...</Text>
       )}
     </Container>
   )

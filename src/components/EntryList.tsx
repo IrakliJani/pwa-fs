@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, Divider, ListProps } from '@chakra-ui/react'
+import { List, Divider, ListProps, ListItem } from '@chakra-ui/react'
 
 import { getDirectoryEntries } from './../utils'
 import EntryItem from './EntryItem'
@@ -20,22 +20,38 @@ const EntryList: React.FunctionComponent<EntryListProps> = ({
 }) => {
   return (
     <List {...listProps}>
-      {children}
+      {entries.length > 0 ? (
+        <>
+          {children}
 
-      {entries.sort(sortEntries).map((entry) => (
-        <React.Fragment key={entry.kind + '-' + entry.name}>
-          <Divider />
+          {entries.sort(sortEntries).map((entry) => (
+            <React.Fragment key={entry.kind + '-' + entry.name}>
+              <ListItem>
+                <Divider />
+              </ListItem>
 
-          <EntryItem
-            entry={entry}
-            name={entry.name}
-            kind={entry.kind}
-            entries={entry.kind === 'directory' ? getDirectoryEntries(entry) : null}
-            onDirectoryChange={onDirectoryChange}
-            onFileClick={onFileClick}
-          />
-        </React.Fragment>
-      ))}
+              <EntryItem
+                entry={entry}
+                name={entry.name}
+                kind={entry.kind}
+                entries={entry.kind === 'directory' ? getDirectoryEntries(entry) : null}
+                onDirectoryChange={onDirectoryChange}
+                onFileClick={onFileClick}
+              />
+            </React.Fragment>
+          ))}
+        </>
+      ) : (
+        <>
+          <ListItem>
+            <Divider />
+          </ListItem>
+
+          <ListItem textAlign="center" fontSize="sm" paddingY="1">
+            Directory is empty...
+          </ListItem>
+        </>
+      )}
     </List>
   )
 }
