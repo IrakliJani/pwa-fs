@@ -100,7 +100,7 @@ const App: React.FC<AppProps> = observer(({ dir }) => {
     <Container maxW="100%" height="100vh" backgroundColor="yellow.50" overflow="hidden">
       {!dir.root ? (
         <Flex height="inherit" alignItems="center" justifyContent="center" flexDirection="column">
-          <Text textAlign="center">Click "Open Folder" Button to get started...</Text>
+          <Text textAlign="center">Click "Open Folder" button below to get started...</Text>
 
           <Button colorScheme="red" onClick={handleOpenFolderDialog} marginTop={3}>
             Open Folder

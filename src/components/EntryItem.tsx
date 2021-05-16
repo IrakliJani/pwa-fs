@@ -1,5 +1,15 @@
 import React from 'react'
-import { ListItem, ListIcon, Box, Link, Spacer, Button, Spinner, Flex } from '@chakra-ui/react'
+import {
+  ListItem,
+  ListIcon,
+  Box,
+  Link,
+  Spacer,
+  Button,
+  Spinner,
+  Flex,
+  Divider,
+} from '@chakra-ui/react'
 import { FiFolder, FiFile, FiChevronRight, FiChevronDown } from 'react-icons/fi'
 
 import { EntryContextProvider, useEntry } from './../providers/entry'
@@ -29,11 +39,13 @@ const EntryItem: React.FC<EntryItemProps> = ({
   const [showButton, setShowbutton] = React.useState<boolean>(false)
 
   const handleOpen = () => {
-    if (!isOpen) {
+    if (isOpen) {
+      setOpen(false)
+      setExpanded(false)
+    } else {
+      setOpen(true)
       setExpanded(false)
     }
-
-    setOpen(!isOpen)
   }
 
   const handleExpand = () => {
@@ -45,7 +57,7 @@ const EntryItem: React.FC<EntryItemProps> = ({
     if (!entries) return
 
     if (isOpen) {
-      ;(async function getEntries() {
+      ;(async function () {
         setSubItems(await entries!)
       })()
     } else {
@@ -104,9 +116,17 @@ const EntryItem: React.FC<EntryItemProps> = ({
             onFileClick={onFileClick}
           />
         ) : !subEntries && isOpen ? (
-          <Flex justifyContent="center">
-            <Spinner size="sm" color="red.500" marginY={2} />
-          </Flex>
+          <>
+            <ListItem>
+              <Divider />
+            </ListItem>
+
+            <ListItem>
+              <Flex justifyContent="center">
+                <Spinner size="sm" color="red.500" marginY={2} />
+              </Flex>
+            </ListItem>
+          </>
         ) : null)}
     </EntryContextProvider>
   )
