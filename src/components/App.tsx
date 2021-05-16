@@ -1,5 +1,5 @@
 import React from 'react'
-import { action } from 'mobx'
+import { runInAction } from 'mobx'
 import { observer } from 'mobx-react'
 import {
   Flex,
@@ -27,16 +27,23 @@ type AppProps = {
 
 const App: React.FC<AppProps> = observer(({ dir }) => {
   const cd = async (dirHandle: FileSystemDirectoryHandle) => {
-    dir.entries = await getDirectoryEntries(dirHandle)
-    dir.current = dirHandle
+    const entities = await getDirectoryEntries(dirHandle)
+
+    runInAction(() => {
+      dir.entries = entities
+      dir.current = dirHandle
+    })
   }
 
   const handleOpenFolderDialog = async () => {
     const rootHandle = await window.showDirectoryPicker()
 
     await cd(rootHandle)
-    dir.root = rootHandle
-    dir.stack.push(rootHandle)
+
+    runInAction(() => {
+      dir.root = rootHandle
+      dir.stack.push(rootHandle)
+    })
   }
 
   const handleGoTo = async (pathString: string) => {
@@ -58,19 +65,27 @@ const App: React.FC<AppProps> = observer(({ dir }) => {
     }
 
     await cd(currentHandle)
-    dir.stack = stack
+
+    runInAction(() => {
+      dir.stack = stack
+    })
   }
 
   const handleParentDirectoryNavigation = async (dirHandle: FileSystemDirectoryHandle) => {
     await cd(dirHandle)
 
-    const index = dir.stack.findIndex((d) => d === dirHandle)
-    dir.stack.splice(index + 1)
+    runInAction(() => {
+      const index = dir.stack.findIndex((d) => d === dirHandle)
+      dir.stack.splice(index + 1)
+    })
   }
 
   const handleChangeDirectory = async (dirHandle: FileSystemDirectoryHandle) => {
     await cd(dirHandle)
-    dir.stack.push(dirHandle)
+
+    runInAction(() => {
+      dir.stack.push(dirHandle)
+    })
   }
 
   const handleDownloadFile = async (fileHandle: FileSystemFileHandle) => {
