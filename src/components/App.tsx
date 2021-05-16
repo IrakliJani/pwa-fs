@@ -84,53 +84,54 @@ const App = () => {
   const parentDirectoryHandle = navigationStack[currentNavigationStackIndex - 1]
 
   return (
-    <Container paddingY="5" backgroundColor="yellow.50">
+    <Container maxW="100%" height="100vh" backgroundColor="yellow.50" overflow="hidden">
       {!rootDirectoryHandle ? (
-        <Box textAlign="center">
+        <Flex height="inherit" alignItems="center" justifyContent="center" flexDirection="column">
           <Text textAlign="center">Click "Open Folder" Button to get started...</Text>
 
-          <Button colorScheme="blue" onClick={handleOpenFolderDialog} marginTop={3}>
+          <Button colorScheme="red" onClick={handleOpenFolderDialog} marginTop={3}>
             Open Folder
           </Button>
-        </Box>
+        </Flex>
       ) : (
-        <>
+        <Flex flexDirection="column" paddingY="5" height="inherit">
           <Flex alignItems="center">
             <Navigation entries={navigationStack} onNavigate={handleParentDirectoryNavigation} />
 
             <Spacer />
 
             <GoTo onSubmit={handleGoTo}>
-              <Button variant="outline" colorScheme="blue" marginLeft={2} size="sm">
+              <Button variant="outline" colorScheme="red" marginLeft={2} size="sm">
                 Go To...
               </Button>
             </GoTo>
           </Flex>
 
-          <EntryList
-            marginTop={5}
-            entries={currentDirectoryEntries}
-            onDirectoryChange={handleChangeDirectory}
-            onFileClick={handleDownloadFile}
-          >
-            {rootDirectoryHandle !== currentDirectoryHandle && (
-              <>
-                <ListItem
-                  {...listStyleProps}
-                  cursor="pointer"
-                  onClick={() => handleParentDirectoryNavigation(parentDirectoryHandle)}
-                >
-                  <ListIcon as={FiCornerLeftUp} color="red.500" />
-                  ..
-                </ListItem>
+          <Box overflowY="scroll" flex="1" marginY={5}>
+            <EntryList
+              entries={currentDirectoryEntries}
+              onDirectoryChange={handleChangeDirectory}
+              onFileClick={handleDownloadFile}
+            >
+              {rootDirectoryHandle !== currentDirectoryHandle && (
+                <>
+                  <Divider />
 
-                <Divider />
-              </>
-            )}
-          </EntryList>
+                  <ListItem
+                    {...listStyleProps}
+                    cursor="pointer"
+                    onClick={() => handleParentDirectoryNavigation(parentDirectoryHandle)}
+                  >
+                    <ListIcon as={FiCornerLeftUp} color="red.500" />
+                    ..
+                  </ListItem>
+                </>
+              )}
+            </EntryList>
 
-          <Divider />
-        </>
+            <Divider />
+          </Box>
+        </Flex>
       )}
     </Container>
   )

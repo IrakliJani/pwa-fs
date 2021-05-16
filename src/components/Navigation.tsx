@@ -1,5 +1,5 @@
 import React from 'react'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from '@chakra-ui/react'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, Text } from '@chakra-ui/react'
 
 type NavigationProps = {
   entries: FileSystemDirectoryHandle[]
@@ -8,13 +8,17 @@ type NavigationProps = {
 
 const Navigation: React.FunctionComponent<NavigationProps> = ({ entries, onNavigate }) => {
   return (
-    <Breadcrumb>
-      {entries.map((directory, index) => (
-        <BreadcrumbItem key={index + '-' + directory.name}>
-          <BreadcrumbLink onClick={() => onNavigate(directory)}>{directory.name}</BreadcrumbLink>
-        </BreadcrumbItem>
-      ))}
-    </Breadcrumb>
+    <>
+      <Text marginRight={2}>pwd:</Text>
+
+      <Breadcrumb>
+        {entries.map((directory, index) => (
+          <BreadcrumbItem key={index + '-' + directory.name}>
+            <BreadcrumbLink onClick={() => onNavigate(directory)}>{directory.name}</BreadcrumbLink>
+          </BreadcrumbItem>
+        ))}
+      </Breadcrumb>
+    </>
   )
 }
 

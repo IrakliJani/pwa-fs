@@ -1,15 +1,5 @@
 import React from 'react'
-import {
-  ListItem,
-  ListIcon,
-  Box,
-  Link,
-  Spacer,
-  Button,
-  Spinner,
-  Text,
-  Flex,
-} from '@chakra-ui/react'
+import { ListItem, ListIcon, Box, Link, Spacer, Button, Spinner, Flex } from '@chakra-ui/react'
 import { FiFolder, FiFile, FiChevronRight, FiChevronDown } from 'react-icons/fi'
 
 import { EntryContextProvider, useEntry } from './../providers/entry'

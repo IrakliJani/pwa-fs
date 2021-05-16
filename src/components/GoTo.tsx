@@ -68,7 +68,7 @@ const GoTo: React.FunctionComponent<GoToProps> = ({ children, onSubmit }) => {
 
                   <InputRightElement width="4.5rem">
                     <Button
-                      colorScheme="blue"
+                      colorScheme="red"
                       height="1.75rem"
                       size="sm"
                       onClick={() => {
