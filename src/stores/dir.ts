@@ -1,4 +1,4 @@
-import { observable, makeObservable, flow } from 'mobx'
+import { observable, makeObservable, flow, computed } from 'mobx'
 
 import { getDirectoryEntries } from './../utils'
 
@@ -15,12 +15,19 @@ class Dir {
       stack: observable,
       entries: observable,
 
+      parentDirHandle: computed,
+
       setCurrentDirAndEntries: flow,
       setRootDir: flow,
       goToDir: flow,
       changeToParentDir: flow,
       changeDir: flow,
     })
+  }
+
+  get parentDirHandle() {
+    const currentDirIndex = this.stack.findIndex((d) => d === this.current)
+    return this.stack[currentDirIndex - 1]
   }
 
   *setCurrentDirAndEntries(dirHandle: FileSystemDirectoryHandle) {

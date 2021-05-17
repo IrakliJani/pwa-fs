@@ -34,8 +34,12 @@ const App: React.FC<AppProps> = observer(({ dir }) => {
     dir.goToDir(path)
   }
 
-  const handleNavigateToParentDir = async (dirHandle: FileSystemDirectoryHandle) => {
+  const handleNavigateToStackDir = async (dirHandle: FileSystemDirectoryHandle) => {
     dir.changeToParentDir(dirHandle)
+  }
+
+  const handleNavigateToParentDir = async () => {
+    dir.changeToParentDir(dir.parentDirHandle)
   }
 
   const handleNavigateDirectory = async (dirHandle: FileSystemDirectoryHandle) => {
@@ -46,9 +50,6 @@ const App: React.FC<AppProps> = observer(({ dir }) => {
     const file: File = await fileHandle.getFile()
     downloadFile(file, fileHandle.name)
   }
-
-  const currentDirIndex = dir.stack.findIndex((d) => d === dir.current)
-  const parentDirHandle = dir.stack[currentDirIndex - 1]
 
   return (
     <Container maxW="100%" height="100vh" backgroundColor="yellow.50" overflow="hidden">
@@ -63,7 +64,7 @@ const App: React.FC<AppProps> = observer(({ dir }) => {
       ) : (
         <Flex flexDirection="column" paddingY="5" height="inherit">
           <Flex alignItems="center">
-            <Navigation entries={dir.stack} onNavigate={handleNavigateToParentDir} />
+            <Navigation entries={dir.stack} onNavigate={handleNavigateToStackDir} />
 
             <Spacer />
 
@@ -87,7 +88,7 @@ const App: React.FC<AppProps> = observer(({ dir }) => {
                   <ListItem
                     {...listStyleProps}
                     cursor="pointer"
-                    onClick={() => handleNavigateToParentDir(parentDirHandle)}
+                    onClick={handleNavigateToParentDir}
                   >
                     <ListIcon as={FiCornerLeftUp} color="red.500" />
                     ..
