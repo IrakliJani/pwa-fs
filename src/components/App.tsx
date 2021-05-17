@@ -30,19 +30,19 @@ const App: React.FC<AppProps> = observer(({ dir }) => {
     dir.setRootDir(rootHandle)
   }
 
-  const handleGoTo = async (path: string) => {
-    dir.goToDir(path)
+  const handleGoTo = (path: string) => {
+    dir.goToPath(path)
   }
 
-  const handleNavigateToStackDir = async (dirHandle: FileSystemDirectoryHandle) => {
+  const handleNavigateToStackDir = (dirHandle: FileSystemDirectoryHandle) => {
     dir.changeToParentDir(dirHandle)
   }
 
-  const handleNavigateToParentDir = async () => {
+  const handleNavigateToParentDir = () => {
     dir.changeToParentDir(dir.parentDirHandle)
   }
 
-  const handleNavigateDirectory = async (dirHandle: FileSystemDirectoryHandle) => {
+  const handleNavigateDirectory = (dirHandle: FileSystemDirectoryHandle) => {
     dir.changeDir(dirHandle)
   }
 

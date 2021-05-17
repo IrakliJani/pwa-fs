@@ -16,7 +16,7 @@ import {
 
 type GoToProps = {
   children: React.ReactNode
-  onSubmit: (pathString: string) => Promise<void>
+  onSubmit: (pathString: string) => void
 }
 
 const GoTo: React.FC<GoToProps> = ({ children, onSubmit }) => {

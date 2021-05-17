@@ -19,9 +19,9 @@ class Dir {
 
       setCurrentDirAndEntries: flow,
       setRootDir: flow,
-      goToDir: flow,
       changeToParentDir: flow,
       changeDir: flow,
+      goToPath: flow,
     })
   }
 
@@ -41,7 +41,19 @@ class Dir {
     this.stack.push(rootHandle)
   }
 
-  *goToDir(path: string) {
+  *changeToParentDir(dirHandle: FileSystemDirectoryHandle) {
+    const index = this.stack.findIndex((d) => d === dirHandle)
+
+    yield this.setCurrentDirAndEntries(dirHandle)
+    this.stack.splice(index + 1)
+  }
+
+  *changeDir(dirHandle: FileSystemDirectoryHandle) {
+    yield this.setCurrentDirAndEntries(dirHandle)
+    this.stack.push(dirHandle)
+  }
+
+  *goToPath(path: string) {
     const dirNames = path.split('/').filter(Boolean)
     let currentHandle = this.root!
     let stack = [currentHandle]
@@ -60,18 +72,6 @@ class Dir {
 
     yield this.setCurrentDirAndEntries(currentHandle)
     this.stack = stack
-  }
-
-  *changeToParentDir(dirHandle: FileSystemDirectoryHandle) {
-    const index = this.stack.findIndex((d) => d === dirHandle)
-
-    yield this.setCurrentDirAndEntries(dirHandle)
-    this.stack.splice(index + 1)
-  }
-
-  *changeDir(dirHandle: FileSystemDirectoryHandle) {
-    yield this.setCurrentDirAndEntries(dirHandle)
-    this.stack.push(dirHandle)
   }
 }
 
