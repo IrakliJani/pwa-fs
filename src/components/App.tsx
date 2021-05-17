@@ -1,5 +1,4 @@
 import React from 'react'
-import { runInAction } from 'mobx'
 import { observer } from 'mobx-react'
 import {
   Flex,
@@ -14,7 +13,7 @@ import {
 } from '@chakra-ui/react'
 import { FiCornerLeftUp } from 'react-icons/fi'
 
-import { getDirectoryEntries, downloadFile } from './../utils'
+import { downloadFile } from './../utils'
 import Dir from './../stores/dir'
 import Navigation from './Navigation'
 import GoTo from './GoTo'
@@ -26,75 +25,31 @@ type AppProps = {
 }
 
 const App: React.FC<AppProps> = observer(({ dir }) => {
-  const cd = async (dirHandle: FileSystemDirectoryHandle) => {
-    const entities = await getDirectoryEntries(dirHandle)
-
-    runInAction(() => {
-      dir.entries = entities
-      dir.current = dirHandle
-    })
-  }
-
   const handleOpenFolderDialog = async () => {
     const rootHandle = await window.showDirectoryPicker()
-
-    await cd(rootHandle)
-
-    runInAction(() => {
-      dir.root = rootHandle
-      dir.stack.push(rootHandle)
-    })
+    dir.setRootDir(rootHandle)
   }
 
-  const handleGoTo = async (pathString: string) => {
-    const pathes = pathString.split('/').filter(Boolean)
-
-    let currentHandle = dir.root!
-    let stack = [currentHandle]
-
-    for (let path of pathes) {
-      const entries = await getDirectoryEntries(currentHandle)
-      const entry = entries
-        .filter((entry) => entry.kind === 'directory')
-        .find((entry) => entry.name === path) as FileSystemDirectoryHandle | undefined
-
-      if (!entry) throw new Error('path does not exist...')
-
-      currentHandle = entry
-      stack.push(entry)
-    }
-
-    await cd(currentHandle)
-
-    runInAction(() => {
-      dir.stack = stack
-    })
+  const handleGoTo = async (path: string) => {
+    dir.goToDir(path)
   }
 
-  const handleParentDirectoryNavigation = async (dirHandle: FileSystemDirectoryHandle) => {
-    await cd(dirHandle)
-
-    runInAction(() => {
-      const index = dir.stack.findIndex((d) => d === dirHandle)
-      dir.stack.splice(index + 1)
-    })
+  const handleNavigateToStackDir = async (dirHandle: FileSystemDirectoryHandle) => {
+    dir.changeToParentDir(dirHandle)
   }
 
-  const handleChangeDirectory = async (dirHandle: FileSystemDirectoryHandle) => {
-    await cd(dirHandle)
+  const handleNavigateToParentDir = async () => {
+    dir.changeToParentDir(dir.parentDirHandle)
+  }
 
-    runInAction(() => {
-      dir.stack.push(dirHandle)
-    })
+  const handleNavigateDirectory = async (dirHandle: FileSystemDirectoryHandle) => {
+    dir.changeDir(dirHandle)
   }
 
   const handleDownloadFile = async (fileHandle: FileSystemFileHandle) => {
     const file: File = await fileHandle.getFile()
     downloadFile(file, fileHandle.name)
   }
-
-  const currentDirIndex = dir.stack.findIndex((d) => d === dir.current)
-  const parentDirHandle = dir.stack[currentDirIndex - 1]
 
   return (
     <Container maxW="100%" height="100vh" backgroundColor="yellow.50" overflow="hidden">
@@ -109,7 +64,7 @@ const App: React.FC<AppProps> = observer(({ dir }) => {
       ) : (
         <Flex flexDirection="column" paddingY="5" height="inherit">
           <Flex alignItems="center">
-            <Navigation entries={dir.stack} onNavigate={handleParentDirectoryNavigation} />
+            <Navigation entries={dir.stack} onNavigate={handleNavigateToStackDir} />
 
             <Spacer />
 
@@ -123,7 +78,7 @@ const App: React.FC<AppProps> = observer(({ dir }) => {
           <Box overflowY="scroll" flex="1" marginY={5}>
             <EntryList
               entries={dir.entries}
-              onDirectoryChange={handleChangeDirectory}
+              onDirectoryChange={handleNavigateDirectory}
               onFileClick={handleDownloadFile}
             >
               {dir.root !== dir.current && (
@@ -133,7 +88,7 @@ const App: React.FC<AppProps> = observer(({ dir }) => {
                   <ListItem
                     {...listStyleProps}
                     cursor="pointer"
-                    onClick={() => handleParentDirectoryNavigation(parentDirHandle)}
+                    onClick={handleNavigateToParentDir}
                   >
                     <ListIcon as={FiCornerLeftUp} color="red.500" />
                     ..
