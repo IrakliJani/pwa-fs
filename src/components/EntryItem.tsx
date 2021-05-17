@@ -17,25 +17,14 @@ import EntryList from './EntryList'
 
 type EntryItemProps = {
   entry: FileSystemHandle
-  name: string
-  kind: string
-  entries: Promise<FileSystemHandle[]> | null
   onDirectoryChange: (dir: FileSystemDirectoryHandle) => void
   onFileClick: (file: FileSystemFileHandle) => void
 }
 
-const EntryItem: React.FC<EntryItemProps> = ({
-  entry,
-  name,
-  kind,
-  entries,
-  onDirectoryChange,
-  onFileClick,
-}) => {
+const EntryItem: React.FC<EntryItemProps> = ({ entry, onDirectoryChange, onFileClick }) => {
   const parentEntryState = useEntry()
   const [isOpen, setOpen] = React.useState<boolean>(parentEntryState.isExpanded)
   const [isExpanded, setExpanded] = React.useState<boolean>()
-  const [subEntries, setSubItems] = React.useState<FileSystemHandle[] | null>(null)
   const [showButton, setShowbutton] = React.useState<boolean>(false)
 
   const handleOpen = () => {
@@ -53,18 +42,6 @@ const EntryItem: React.FC<EntryItemProps> = ({
     setExpanded(true)
   }
 
-  React.useEffect(() => {
-    if (!entries) return
-
-    if (isOpen) {
-      ;(async function () {
-        setSubItems(await entries!)
-      })()
-    } else {
-      setSubItems(null)
-    }
-  }, [isOpen, setSubItems, entries])
-
   return (
     <EntryContextProvider isExpanded={isExpanded}>
       <ListItem
@@ -72,7 +49,7 @@ const EntryItem: React.FC<EntryItemProps> = ({
         onMouseEnter={() => setShowbutton(true)}
         onMouseLeave={() => setShowbutton(false)}
       >
-        {kind === 'directory' ? (
+        {entry.kind === 'directory' ? (
           <ListIcon
             as={isOpen ? FiChevronDown : FiChevronRight}
             color="gray.500"
@@ -86,36 +63,36 @@ const EntryItem: React.FC<EntryItemProps> = ({
           <Box boxSize={3.5} marginInlineEnd={2} />
         )}
 
-        <ListIcon as={kind === 'directory' ? FiFolder : FiFile} color="red.500" />
+        <ListIcon as={entry.kind === 'directory' ? FiFolder : FiFile} color="red.500" />
 
         <Link
           onClick={
-            kind === 'directory'
+            entry.kind === 'directory'
               ? () => onDirectoryChange(entry as FileSystemDirectoryHandle)
               : () => onFileClick(entry as FileSystemFileHandle)
           }
         >
-          {name}
+          {entry.name}
         </Link>
 
         <Spacer />
 
-        {kind === 'directory' && showButton && !isExpanded && !isOpen && (
+        {entry.kind === 'directory' && showButton && !isExpanded && !isOpen && (
           <Button size="xs" onClick={handleExpand}>
             Expand
           </Button>
         )}
       </ListItem>
 
-      {kind === 'directory' &&
-        (subEntries && isOpen ? (
+      {isOpen &&
+        (subEntries ? (
           <EntryList
             marginLeft={6}
             entries={subEntries}
             onDirectoryChange={onDirectoryChange}
             onFileClick={onFileClick}
           />
-        ) : !subEntries && isOpen ? (
+        ) : (
           <>
             <ListItem>
               <Divider />
@@ -127,7 +104,7 @@ const EntryItem: React.FC<EntryItemProps> = ({
               </Flex>
             </ListItem>
           </>
-        ) : null)}
+        ))}
     </EntryContextProvider>
   )
 }

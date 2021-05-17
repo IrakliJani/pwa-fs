@@ -1,7 +1,6 @@
 import React from 'react'
 import { List, Divider, ListProps, ListItem } from '@chakra-ui/react'
 
-import { getDirectoryEntries } from './../utils'
 import EntryItem from './EntryItem'
 
 interface EntryListProps extends ListProps {
@@ -32,9 +31,6 @@ const EntryList: React.FC<EntryListProps> = ({
 
               <EntryItem
                 entry={entry}
-                name={entry.name}
-                kind={entry.kind}
-                entries={entry.kind === 'directory' ? getDirectoryEntries(entry) : null}
                 onDirectoryChange={onDirectoryChange}
                 onFileClick={onFileClick}
               />

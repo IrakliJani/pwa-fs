@@ -1,4 +1,4 @@
-export const getDirectoryEntries = async (dirHandle: FileSystemDirectoryHandle) => {
+export const getDirEntries = async (dirHandle: FileSystemDirectoryHandle) => {
   const entries: FileSystemHandle[] = []
 
   for await (let [, handler] of dirHandle.entries()) {

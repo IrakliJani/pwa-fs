@@ -1,6 +1,5 @@
 import { observable, makeObservable, flow, computed } from 'mobx'
-
-import { getDirectoryEntries } from './../utils'
+import { getDirEntries } from './../utils'
 
 class Dir {
   root: FileSystemDirectoryHandle | null = null
@@ -31,7 +30,7 @@ class Dir {
   }
 
   *setCurrentDirAndEntries(dirHandle: FileSystemDirectoryHandle) {
-    this.entries = yield getDirectoryEntries(dirHandle)
+    this.entries = yield getDirEntries(dirHandle)
     this.current = dirHandle
   }
 
@@ -59,7 +58,7 @@ class Dir {
     let stack = [currentHandle]
 
     for (let dirName of dirNames) {
-      const entries: FileSystemHandle[] = yield getDirectoryEntries(currentHandle)
+      const entries: FileSystemHandle[] = yield getDirEntries(currentHandle)
       const entry = entries
         .filter((entry) => entry.kind === 'directory')
         .find((entry) => entry.name === dirName) as FileSystemDirectoryHandle | undefined
