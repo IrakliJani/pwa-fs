@@ -1,26 +1,37 @@
 import React from 'react'
-import { List, Divider, ListProps, ListItem, Flex, Spinner } from '@chakra-ui/react'
 import { observer } from 'mobx-react'
+import { List, ListItem, ListIcon, ListProps, Divider, Flex, Spinner } from '@chakra-ui/react'
+import { FiCornerLeftUp } from 'react-icons/fi'
 
-import EntryItem from './EntryItem'
 import Dir from '../stores/Dir'
 import File from '../stores/File'
 import { Entry } from '../stores/State'
+import EntryFile from './EntryFile'
+import EntryDir from './EntryDir'
+import { listStyleProps } from './_styles'
 
 interface EntryListProps {
-  children?: React.ReactNode
+  isRoot?: boolean
   dir: Dir
   onDirChange: (dir: Dir) => void
-  onClickFile: (file: File) => void
 }
 
 const EntryList: React.FC<Omit<ListProps, 'dir'> & EntryListProps> = observer(
-  ({ children, dir, onDirChange, onClickFile, ...listProps }) => {
+  ({ isRoot, dir, onDirChange, ...listProps }) => {
     return (
       <List {...listProps}>
-        {children}
+        {!isRoot && !dir.isOpen && (
+          <>
+            <Divider />
 
-        {dir.entries === null ? (
+            <ListItem {...listStyleProps} cursor="pointer" onClick={() => onDirChange(dir.parent!)}>
+              <ListIcon as={FiCornerLeftUp} color="red.500" />
+              ..
+            </ListItem>
+          </>
+        )}
+
+        {!dir.entries ? (
           <>
             <ListItem>
               <Divider />
@@ -32,7 +43,7 @@ const EntryList: React.FC<Omit<ListProps, 'dir'> & EntryListProps> = observer(
               </Flex>
             </ListItem>
           </>
-        ) : dir.entries && dir.entries.length > 0 ? (
+        ) : dir.entries.length > 0 ? (
           <>
             {dir.entries
               .slice()
@@ -43,7 +54,11 @@ const EntryList: React.FC<Omit<ListProps, 'dir'> & EntryListProps> = observer(
                     <Divider />
                   </ListItem>
 
-                  <EntryItem entry={entry} onDirChange={onDirChange} onClickFile={onClickFile} />
+                  {entry instanceof Dir ? (
+                    <EntryDir dir={entry} onDirChange={onDirChange} />
+                  ) : entry instanceof File ? (
+                    <EntryFile file={entry} />
+                  ) : null}
                 </React.Fragment>
               ))}
           </>

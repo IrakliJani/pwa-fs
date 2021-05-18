@@ -1,25 +1,12 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import {
-  Flex,
-  Box,
-  Spacer,
-  Container,
-  Button,
-  ListItem,
-  ListIcon,
-  Divider,
-  Text,
-} from '@chakra-ui/react'
-import { FiCornerLeftUp } from 'react-icons/fi'
+import { Flex, Box, Spacer, Container, Button, Divider, Text } from '@chakra-ui/react'
 
+import Dir from '../stores/Dir'
 import State from '../stores/State'
 import Navigation from './Navigation'
 import GoTo from './GoTo'
 import EntryList from './EntryList'
-import { listStyleProps } from './EntryItem'
-import Dir from '../stores/Dir'
-import File from '../stores/File'
 
 type AppProps = {
   state: State
@@ -37,10 +24,6 @@ const App: React.FC<AppProps> = observer(({ state }) => {
 
   const handleGoTo = (path: string) => {
     state.goToPath(path)
-  }
-
-  const handleDownloadFile = (file: File) => {
-    file.download()
   }
 
   return (
@@ -69,25 +52,10 @@ const App: React.FC<AppProps> = observer(({ state }) => {
 
           <Box overflowY="scroll" flex="1" marginY={5}>
             <EntryList
+              isRoot={state.root === state.current}
               dir={state.current}
               onDirChange={handleChangeDir}
-              onClickFile={handleDownloadFile}
-            >
-              {state.root !== state.current && (
-                <>
-                  <Divider />
-
-                  <ListItem
-                    {...listStyleProps}
-                    cursor="pointer"
-                    onClick={() => handleChangeDir(state.current!.parent!)}
-                  >
-                    <ListIcon as={FiCornerLeftUp} color="red.500" />
-                    ..
-                  </ListItem>
-                </>
-              )}
-            </EntryList>
+            />
 
             <Divider />
           </Box>
