@@ -2,9 +2,11 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, Text } from '@chakra-ui/react'
 
+import Dir from '../stores/Dir'
+
 type NavigationProps = {
-  entries: FileSystemDirectoryHandle[]
-  onNavigate: (dirHandle: FileSystemDirectoryHandle) => void
+  entries: Dir[]
+  onNavigate: (dir: Dir) => void
 }
 
 const Navigation: React.FC<NavigationProps> = observer(({ entries, onNavigate }) => {
@@ -14,8 +16,10 @@ const Navigation: React.FC<NavigationProps> = observer(({ entries, onNavigate })
 
       <Breadcrumb>
         {entries.map((directory, index) => (
-          <BreadcrumbItem key={index + '-' + directory.name}>
-            <BreadcrumbLink onClick={() => onNavigate(directory)}>{directory.name}</BreadcrumbLink>
+          <BreadcrumbItem key={index + '-' + directory.handle.name}>
+            <BreadcrumbLink onClick={() => onNavigate(directory)}>
+              {directory.handle.name}
+            </BreadcrumbLink>
           </BreadcrumbItem>
         ))}
       </Breadcrumb>

@@ -1,113 +1,84 @@
 import React from 'react'
-import {
-  ListItem,
-  ListIcon,
-  Box,
-  Link,
-  Spacer,
-  Button,
-  Spinner,
-  Flex,
-  Divider,
-} from '@chakra-ui/react'
+import { ListItem, ListIcon, Box, Link, Spacer, Button } from '@chakra-ui/react'
 import { FiFolder, FiFile, FiChevronRight, FiChevronDown } from 'react-icons/fi'
 
 import { EntryContextProvider, useEntry } from './../providers/entry'
 import EntryList from './EntryList'
+import { observer } from 'mobx-react'
+
+import Dir from '../stores/Dir'
+import File from '../stores/File'
+import { Entry } from '../stores/State'
 
 type EntryItemProps = {
-  entry: FileSystemHandle
-  onDirectoryChange: (dir: FileSystemDirectoryHandle) => void
-  onFileClick: (file: FileSystemFileHandle) => void
+  entry: Entry
+  onDirChange: (dir: Dir) => void
+  onClickFile: (file: File) => void
 }
 
-const EntryItem: React.FC<EntryItemProps> = ({ entry, onDirectoryChange, onFileClick }) => {
-  const parentEntryState = useEntry()
-  const [isOpen, setOpen] = React.useState<boolean>(parentEntryState.isExpanded)
-  const [isExpanded, setExpanded] = React.useState<boolean>()
+const EntryItem: React.FC<EntryItemProps> = observer(({ entry, onDirChange, onClickFile }) => {
+  // const parentEntryState = useEntry()
+  // const [isOpen, setOpen] = React.useState<boolean>(parentEntryState.isExpanded)
+  // const [isExpanded, setExpanded] = React.useState<boolean>()
   const [showButton, setShowbutton] = React.useState<boolean>(false)
 
-  const handleOpen = () => {
-    if (isOpen) {
-      setOpen(false)
-      setExpanded(false)
+  const handleOpen = (dir: Dir) => {
+    if (dir.isOpen) {
+      dir.close()
+      dir.collapse()
     } else {
-      setOpen(true)
-      setExpanded(false)
+      dir.open()
+      dir.collapse()
     }
   }
 
-  const handleExpand = () => {
-    setOpen(true)
-    setExpanded(true)
+  const handleExpand = (dir: Dir) => {
+    dir.open()
+    dir.expand()
   }
 
   return (
-    <EntryContextProvider isExpanded={isExpanded}>
+    <EntryContextProvider isExpanded={false} /* TODO */>
       <ListItem
         {...listStyleProps}
         onMouseEnter={() => setShowbutton(true)}
         onMouseLeave={() => setShowbutton(false)}
       >
-        {entry.kind === 'directory' ? (
+        {entry instanceof Dir ? (
           <ListIcon
-            as={isOpen ? FiChevronDown : FiChevronRight}
+            as={entry.isOpen ? FiChevronDown : FiChevronRight}
             color="gray.500"
             cursor="pointer"
             _hover={{
               backgroundColor: 'gray.100',
             }}
-            onClick={handleOpen}
+            onClick={() => handleOpen(entry)}
           />
         ) : (
           <Box boxSize={3.5} marginInlineEnd={2} />
         )}
 
-        <ListIcon as={entry.kind === 'directory' ? FiFolder : FiFile} color="red.500" />
+        <ListIcon as={entry instanceof Dir ? FiFolder : FiFile} color="red.500" />
 
-        <Link
-          onClick={
-            entry.kind === 'directory'
-              ? () => onDirectoryChange(entry as FileSystemDirectoryHandle)
-              : () => onFileClick(entry as FileSystemFileHandle)
-          }
-        >
-          {entry.name}
+        <Link onClick={entry instanceof Dir ? () => onDirChange(entry) : () => onClickFile(entry)}>
+          {entry.handle.name}
         </Link>
 
         <Spacer />
 
-        {entry.kind === 'directory' && showButton && !isExpanded && !isOpen && (
-          <Button size="xs" onClick={handleExpand}>
+        {entry instanceof Dir && showButton && !entry.isExpanded && !entry.isOpen && (
+          <Button size="xs" onClick={() => handleExpand(entry)}>
             Expand
           </Button>
         )}
       </ListItem>
 
-      {isOpen &&
-        (subEntries ? (
-          <EntryList
-            marginLeft={6}
-            entries={subEntries}
-            onDirectoryChange={onDirectoryChange}
-            onFileClick={onFileClick}
-          />
-        ) : (
-          <>
-            <ListItem>
-              <Divider />
-            </ListItem>
-
-            <ListItem>
-              <Flex justifyContent="center">
-                <Spinner size="sm" color="red.500" marginY={2} />
-              </Flex>
-            </ListItem>
-          </>
-        ))}
+      {entry instanceof Dir && entry.isOpen && (
+        <EntryList marginLeft={6} dir={entry} onDirChange={onDirChange} onClickFile={onClickFile} />
+      )}
     </EntryContextProvider>
   )
-}
+})
 
 export const listStyleProps = {
   display: 'flex',

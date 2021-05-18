@@ -19,7 +19,14 @@
     "isolatedModules": true,
     "experimentalDecorators": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "strictFunctionTypes": true,
+    "noImplicitThis": true,
   },
   "include": [
     "src"

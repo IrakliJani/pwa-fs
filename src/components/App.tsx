@@ -13,47 +13,39 @@ import {
 } from '@chakra-ui/react'
 import { FiCornerLeftUp } from 'react-icons/fi'
 
-import { downloadFile } from './../utils'
-import Dir from './../stores/dir'
+import State from '../stores/State'
 import Navigation from './Navigation'
 import GoTo from './GoTo'
 import EntryList from './EntryList'
 import { listStyleProps } from './EntryItem'
+import Dir from '../stores/Dir'
+import File from '../stores/File'
 
 type AppProps = {
-  dir: Dir
+  state: State
 }
 
-const App: React.FC<AppProps> = observer(({ dir }) => {
+const App: React.FC<AppProps> = observer(({ state }) => {
   const handleOpenFolderDialog = async () => {
     const rootHandle = await window.showDirectoryPicker()
-    dir.setRootDir(rootHandle)
+    state.setRootDir(rootHandle)
+  }
+
+  const handleChangeDir = (dir: Dir) => {
+    state.changeDir(dir)
   }
 
   const handleGoTo = (path: string) => {
-    dir.goToPath(path)
+    state.goToPath(path)
   }
 
-  const handleNavigateToStackDir = (dirHandle: FileSystemDirectoryHandle) => {
-    dir.changeToParentDir(dirHandle)
-  }
-
-  const handleNavigateToParentDir = () => {
-    dir.changeToParentDir(dir.parentDirHandle)
-  }
-
-  const handleNavigateDirectory = (dirHandle: FileSystemDirectoryHandle) => {
-    dir.changeDir(dirHandle)
-  }
-
-  const handleDownloadFile = async (fileHandle: FileSystemFileHandle) => {
-    const file: File = await fileHandle.getFile()
-    downloadFile(file, fileHandle.name)
+  const handleDownloadFile = (file: File) => {
+    file.download()
   }
 
   return (
     <Container maxW="100%" height="100vh" backgroundColor="yellow.50" overflow="hidden">
-      {!dir.root ? (
+      {!state.current ? (
         <Flex height="inherit" alignItems="center" justifyContent="center" flexDirection="column">
           <Text textAlign="center">Click "Open Folder" button below to get started...</Text>
 
@@ -64,7 +56,7 @@ const App: React.FC<AppProps> = observer(({ dir }) => {
       ) : (
         <Flex flexDirection="column" paddingY="5" height="inherit">
           <Flex alignItems="center">
-            <Navigation entries={dir.stack} onNavigate={handleNavigateToStackDir} />
+            <Navigation entries={state.stack} onNavigate={handleChangeDir} />
 
             <Spacer />
 
@@ -77,18 +69,18 @@ const App: React.FC<AppProps> = observer(({ dir }) => {
 
           <Box overflowY="scroll" flex="1" marginY={5}>
             <EntryList
-              entries={dir.entries}
-              onDirectoryChange={handleNavigateDirectory}
-              onFileClick={handleDownloadFile}
+              dir={state.current}
+              onDirChange={handleChangeDir}
+              onClickFile={handleDownloadFile}
             >
-              {dir.root !== dir.current && (
+              {state.root !== state.current && (
                 <>
                   <Divider />
 
                   <ListItem
                     {...listStyleProps}
                     cursor="pointer"
-                    onClick={handleNavigateToParentDir}
+                    onClick={() => handleChangeDir(state.current!.parent!)}
                   >
                     <ListIcon as={FiCornerLeftUp} color="red.500" />
                     ..

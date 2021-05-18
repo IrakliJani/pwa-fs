@@ -1,76 +1,41 @@
-import { observable, makeObservable, flow, computed } from 'mobx'
-import { getDirEntries } from './../utils'
+import { makeAutoObservable } from 'mobx'
+
+import { Entry } from './State'
+import { getDirEntries } from './_utils'
 
 class Dir {
-  root: FileSystemDirectoryHandle | null = null
-  current: FileSystemDirectoryHandle | null = null
-  stack: FileSystemDirectoryHandle[] = []
-  entries: FileSystemHandle[] = []
+  handle: FileSystemDirectoryHandle
+  parent?: Dir
+  entries?: Array<Entry>
+  isOpen: boolean = false
+  isExpanded: boolean = false
 
-  constructor() {
-    makeObservable(this, {
-      root: observable,
-      current: observable,
-      stack: observable,
-      entries: observable,
+  constructor(handle: FileSystemDirectoryHandle, dir?: Dir) {
+    makeAutoObservable(this)
 
-      parentDirHandle: computed,
-
-      setCurrentDirAndEntries: flow,
-      setRootDir: flow,
-      changeToParentDir: flow,
-      changeDir: flow,
-      goToPath: flow,
-    })
+    this.handle = handle
+    this.parent = dir
   }
 
-  get parentDirHandle() {
-    const currentDirIndex = this.stack.findIndex((d) => d === this.current)
-    return this.stack[currentDirIndex - 1]
+  open() {
+    this.isOpen = true
+    this.getEntries()
   }
 
-  *setCurrentDirAndEntries(dirHandle: FileSystemDirectoryHandle) {
-    this.entries = yield getDirEntries(dirHandle)
-    this.current = dirHandle
+  close() {
+    this.isOpen = false
   }
 
-  *setRootDir(rootHandle: FileSystemDirectoryHandle) {
-    yield this.setCurrentDirAndEntries(rootHandle)
-    this.root = rootHandle
-    this.stack.push(rootHandle)
+  expand() {
+    this.isExpanded = true
   }
 
-  *changeToParentDir(dirHandle: FileSystemDirectoryHandle) {
-    const index = this.stack.findIndex((d) => d === dirHandle)
-
-    yield this.setCurrentDirAndEntries(dirHandle)
-    this.stack.splice(index + 1)
+  collapse() {
+    this.isExpanded = false
   }
 
-  *changeDir(dirHandle: FileSystemDirectoryHandle) {
-    yield this.setCurrentDirAndEntries(dirHandle)
-    this.stack.push(dirHandle)
-  }
-
-  *goToPath(path: string) {
-    const dirNames = path.split('/').filter(Boolean)
-    let currentHandle = this.root!
-    let stack = [currentHandle]
-
-    for (let dirName of dirNames) {
-      const entries: FileSystemHandle[] = yield getDirEntries(currentHandle)
-      const entry = entries
-        .filter((entry) => entry.kind === 'directory')
-        .find((entry) => entry.name === dirName) as FileSystemDirectoryHandle | undefined
-
-      if (!entry) throw new Error('Path does not exist...')
-
-      currentHandle = entry
-      stack.push(entry)
-    }
-
-    yield this.setCurrentDirAndEntries(currentHandle)
-    this.stack = stack
+  *getEntries() {
+    this.entries = yield getDirEntries(this)
   }
 }
 
