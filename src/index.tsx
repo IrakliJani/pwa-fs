@@ -3,15 +3,15 @@ import ReactDOM from 'react-dom'
 import { ChakraProvider } from '@chakra-ui/react'
 
 import * as serviceWorkerRegistration from './workers/serviceWorkerRegistration'
-import State from './stores/State'
+import Store from './stores/Store'
 import App from './components/App'
 
-const state = new State()
+const store = new Store()
 
 ReactDOM.render(
   <React.StrictMode>
     <ChakraProvider>
-      <App state={state} />
+      <App store={store} />
     </ChakraProvider>
   </React.StrictMode>,
   document.getElementById('root'),

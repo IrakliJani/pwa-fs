@@ -5,7 +5,7 @@ import { FiCornerLeftUp } from 'react-icons/fi'
 
 import Dir from '../stores/Dir'
 import File from '../stores/File'
-import { Entry } from '../stores/State'
+import { Entry } from '../stores/Store'
 import EntryFile from './EntryFile'
 import EntryDir from './EntryDir'
 import { listStyleProps } from './_styles'

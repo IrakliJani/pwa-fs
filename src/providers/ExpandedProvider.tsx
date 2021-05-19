@@ -11,11 +11,7 @@ const ExpandedContextProvider: React.FC<ExpandedContextProviderProps> = ({
   isExpanded,
   children,
 }) => {
-  return isExpanded ? (
-    <ExpandedContext.Provider value={isExpanded}>{children}</ExpandedContext.Provider>
-  ) : (
-    <>{children}</>
-  )
+  return <ExpandedContext.Provider value={isExpanded}>{children}</ExpandedContext.Provider>
 }
 
 const useExpanded = () => {

@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx'
 
-import { Entry } from './State'
+import { Entry } from './Store'
 import { getDirEntries } from './_utils'
 
 class Dir {
@@ -26,7 +26,7 @@ class Dir {
 
   close() {
     this.isOpen = false
-    this.entries = []
+    this.entries = undefined
   }
 
   expand() {

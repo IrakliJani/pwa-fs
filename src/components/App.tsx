@@ -3,32 +3,32 @@ import { observer } from 'mobx-react'
 import { Flex, Box, Spacer, Container, Button, Divider, Text } from '@chakra-ui/react'
 
 import Dir from '../stores/Dir'
-import State from '../stores/State'
+import Store from '../stores/Store'
 import Navigation from './Navigation'
 import GoTo from './GoTo'
 import EntryList from './EntryList'
 
 type AppProps = {
-  state: State
+  store: Store
 }
 
-const App: React.FC<AppProps> = observer(({ state }) => {
+const App: React.FC<AppProps> = observer(({ store }) => {
   const handleOpenFolderDialog = async () => {
     const rootHandle = await window.showDirectoryPicker()
-    state.setRootDir(rootHandle)
+    store.setRootDir(rootHandle)
   }
 
   const handleChangeDir = (dir: Dir) => {
-    state.changeDir(dir)
+    store.changeDir(dir)
   }
 
   const handleGoTo = (path: string) => {
-    state.goToPath(path)
+    store.goToPath(path)
   }
 
   return (
     <Container maxW="100%" height="100vh" backgroundColor="yellow.50" overflow="hidden">
-      {!state.current ? (
+      {!store.currentDir ? (
         <Flex height="inherit" alignItems="center" justifyContent="center" flexDirection="column">
           <Text textAlign="center">Click "Open Folder" button below to get started...</Text>
 
@@ -39,7 +39,7 @@ const App: React.FC<AppProps> = observer(({ state }) => {
       ) : (
         <Flex flexDirection="column" paddingY="5" height="inherit">
           <Flex alignItems="center">
-            <Navigation entries={state.stack} onNavigate={handleChangeDir} />
+            <Navigation entries={store.stack} onNavigate={handleChangeDir} />
 
             <Spacer />
 
@@ -52,8 +52,8 @@ const App: React.FC<AppProps> = observer(({ state }) => {
 
           <Box overflowY="scroll" flex="1" marginY={5}>
             <EntryList
-              isRoot={state.root === state.current}
-              dir={state.current}
+              isRoot={store.rootDir === store.currentDir}
+              dir={store.currentDir}
               onDirChange={handleChangeDir}
             />
 

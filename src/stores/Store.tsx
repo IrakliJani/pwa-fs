@@ -6,61 +6,61 @@ import { getDirEntries } from './_utils'
 
 type Entry = Dir | File
 
-class State {
-  root?: Dir
-  current?: Dir
+class Store {
+  rootDir?: Dir
+  currentDir?: Dir
 
   constructor() {
     makeAutoObservable(this)
   }
 
   get stack() {
-    if (!this.current) return []
+    if (!this.currentDir) return []
 
-    const stack = [this.current]
-    let current = this.current
+    const stack = [this.currentDir]
+    let currentDir = this.currentDir
 
-    while (current.parent) {
-      current = current.parent
-      stack.push(current)
+    while (currentDir.parent) {
+      currentDir = currentDir.parent
+      stack.push(currentDir)
     }
 
     return stack.reverse()
   }
 
   changeDir(dir: Dir) {
-    this.current = dir
+    this.currentDir = dir
 
     dir.getEntries()
   }
 
   setRootDir(rootHandle: FileSystemDirectoryHandle) {
-    const root = new Dir(rootHandle)
+    const rootDir = new Dir(rootHandle)
 
-    this.root = root
-    this.changeDir(root)
+    this.rootDir = rootDir
+    this.changeDir(rootDir)
   }
 
   *goToPath(path: string) {
-    if (!this.root) throw new Error('Root folder does not exist...')
+    if (!this.rootDir) throw new Error('Root folder does not exist...')
 
     const dirNames = path.split('/').filter(Boolean)
-    let current = this.root
+    let currentDir = this.rootDir
 
     for (let dirName of dirNames) {
-      const entries: Array<Entry> = yield getDirEntries(current)
+      const entries: Array<Entry> = yield getDirEntries(currentDir)
       const entry = entries
         .filter((entry) => entry instanceof Dir)
         .find((dirEntry) => dirEntry.handle.name === dirName) as Dir
 
       if (!entry) throw new Error('Path does not exist...')
 
-      current = entry
+      currentDir = entry
     }
 
-    this.changeDir(current)
+    this.changeDir(currentDir)
   }
 }
 
-export default State
+export default Store
 export type { Entry }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { ListItem, ListIcon, Link, Spacer, Button } from '@chakra-ui/react'
 import { FiFolder, FiChevronRight, FiChevronDown } from 'react-icons/fi'
 
@@ -18,10 +18,6 @@ const EntryDir: React.FC<EntryDirProps> = observer(({ dir, onDirChange }) => {
   const isExpanded = useExpanded()
   const [showButton, setShowbutton] = React.useState<boolean>(false)
 
-  useEffect(() => {
-    if (isExpanded) dir.open() // TODOOOOOO cleanup on close
-  }, [dir, isExpanded])
-
   const handleOpen = () => {
     if (dir.isOpen) {
       dir.close()
@@ -32,10 +28,14 @@ const EntryDir: React.FC<EntryDirProps> = observer(({ dir, onDirChange }) => {
     }
   }
 
-  const handleExpand = () => {
+  const handleExpand = React.useCallback(() => {
     dir.open()
     dir.expand()
-  }
+  }, [dir])
+
+  React.useEffect(() => {
+    if (isExpanded) handleExpand()
+  }, [handleExpand, isExpanded])
 
   return (
     <ExpandedContextProvider isExpanded={dir.isExpanded}>

@@ -1,6 +1,6 @@
 import Dir from './Dir'
 import File from './File'
-import { Entry } from './State'
+import { Entry } from './Store'
 
 const getDirEntries = async (dir: Dir): Promise<Array<Entry>> => {
   const entries: Array<Entry> = []
