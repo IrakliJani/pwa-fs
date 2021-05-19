@@ -1,6 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Flex, Box, Spacer, Container, Button, Divider, Text } from '@chakra-ui/react'
+import { Flex, Box, Spacer, Container, Button, Divider, Text, Link, Icon } from '@chakra-ui/react'
+import { FiExternalLink } from 'react-icons/fi'
 
 import Dir from '../stores/Dir'
 import StackNavigation from './StackNavigation'
@@ -26,7 +27,23 @@ const App: React.FC = observer(() => {
 
   return (
     <Container maxW="100%" height="100vh" backgroundColor="yellow.50" overflow="hidden">
-      {!store.currentDir ? (
+      {!('showDirectoryPicker' in window) ? (
+        <Flex height="inherit" alignItems="center" justifyContent="center">
+          <Text>
+            This browser does not{' '}
+            <Link href="https://caniuse.com/native-filesystem-api" isExternal>
+              support <Icon as={FiExternalLink} width={3} height={3} mb={2} mr={2} />
+            </Link>{' '}
+            <Link
+              href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API"
+              fontWeight="bold"
+              isExternal
+            >
+              File System Access API <Icon as={FiExternalLink} width={3} height={3} mb={2} mr={2} />
+            </Link>
+          </Text>
+        </Flex>
+      ) : !store.currentDir ? (
         <Flex height="inherit" alignItems="center" justifyContent="center" flexDirection="column">
           <Text textAlign="center">Click "Open Folder" button below to get started...</Text>
 
