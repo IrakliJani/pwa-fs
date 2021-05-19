@@ -6,7 +6,7 @@ import Store from './stores/Store'
 import App from './components/App'
 import { StoreContextProvider } from './providers/StoreProvider'
 
-import * as serviceWorkerRegistration from './workers/serviceWorkerRegistration'
+import * as serviceWorkerRegistration from './serviceWorkerRegistration'
 
 const store = new Store()
 

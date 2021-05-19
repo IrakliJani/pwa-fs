@@ -61,7 +61,7 @@ const EntryDir: React.FC<EntryDirProps> = observer(({ dir }) => {
           onClick={handleOpen}
         />
 
-        <ListIcon as={FiFolder} color="red.500" fill={dir.isOpen ? 'red.500' : undefined} />
+        <ListIcon as={FiFolder} color="red.500" fill={dir.isOpen ? 'red.300' : undefined} />
 
         <Link fontWeight={dir.isOpen ? 'bold' : 'initial'} onClick={handleChangeDir}>
           {dir.handle.name}
