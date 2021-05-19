@@ -7,6 +7,7 @@ class Dir {
   handle: FileSystemDirectoryHandle
   parent?: Dir
   entries?: Array<Entry>
+
   isOpen: boolean = false
   isExpanded: boolean = false
 
@@ -19,11 +20,13 @@ class Dir {
 
   open() {
     this.isOpen = true
+
     this.getEntries()
   }
 
   close() {
     this.isOpen = false
+    this.entries = []
   }
 
   expand() {

@@ -29,9 +29,9 @@ class State {
   }
 
   changeDir(dir: Dir) {
-    dir.getEntries()
-
     this.current = dir
+
+    dir.getEntries()
   }
 
   setRootDir(rootHandle: FileSystemDirectoryHandle) {

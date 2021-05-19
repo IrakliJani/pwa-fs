@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { ListItem, ListIcon, Link, Spacer, Button } from '@chakra-ui/react'
 import { FiFolder, FiChevronRight, FiChevronDown } from 'react-icons/fi'
 
-import { EntryContextProvider, useEntry } from './../providers/entry'
+import { ExpandedContextProvider, useExpanded } from '../providers/ExpandedProvider'
 import EntryList from './EntryList'
 import { observer } from 'mobx-react'
 
@@ -15,10 +15,12 @@ type EntryDirProps = {
 }
 
 const EntryDir: React.FC<EntryDirProps> = observer(({ dir, onDirChange }) => {
-  // const parentEntryState = useEntry()
-  // const [isOpen, setOpen] = React.useState<boolean>(parentEntryState.isExpanded)
-  // const [isExpanded, setExpanded] = React.useState<boolean>()
+  const isExpanded = useExpanded()
   const [showButton, setShowbutton] = React.useState<boolean>(false)
+
+  useEffect(() => {
+    if (isExpanded) dir.open() // TODOOOOOO cleanup on close
+  }, [dir, isExpanded])
 
   const handleOpen = () => {
     if (dir.isOpen) {
@@ -36,7 +38,7 @@ const EntryDir: React.FC<EntryDirProps> = observer(({ dir, onDirChange }) => {
   }
 
   return (
-    <EntryContextProvider isExpanded={false} /* TODO */>
+    <ExpandedContextProvider isExpanded={dir.isExpanded}>
       <ListItem
         {...listStyleProps}
         onMouseEnter={() => setShowbutton(true)}
@@ -68,7 +70,7 @@ const EntryDir: React.FC<EntryDirProps> = observer(({ dir, onDirChange }) => {
       {dir instanceof Dir && dir.isOpen && (
         <EntryList marginLeft={6} dir={dir} onDirChange={onDirChange} />
       )}
-    </EntryContextProvider>
+    </ExpandedContextProvider>
   )
 })
 
