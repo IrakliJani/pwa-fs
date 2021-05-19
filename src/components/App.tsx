@@ -3,22 +3,20 @@ import { observer } from 'mobx-react'
 import { Flex, Box, Spacer, Container, Button, Divider, Text } from '@chakra-ui/react'
 
 import Dir from '../stores/Dir'
-import Store from '../stores/Store'
-import Navigation from './Navigation'
+import StackNavigation from './StackNavigation'
 import GoTo from './GoTo'
 import EntryList from './EntryList'
+import { useStore } from '../providers/StoreProvider'
 
-type AppProps = {
-  store: Store
-}
+const App: React.FC = observer(() => {
+  const store = useStore()
 
-const App: React.FC<AppProps> = observer(({ store }) => {
   const handleOpenFolderDialog = async () => {
     const rootHandle = await window.showDirectoryPicker()
     store.setRootDir(rootHandle)
   }
 
-  const handleChangeDir = (dir: Dir) => {
+  const handleStackNavigation = (dir: Dir) => {
     store.changeDir(dir)
   }
 
@@ -39,7 +37,11 @@ const App: React.FC<AppProps> = observer(({ store }) => {
       ) : (
         <Flex flexDirection="column" paddingY="5" height="inherit">
           <Flex alignItems="center">
-            <Navigation entries={store.stack} onNavigate={handleChangeDir} />
+            <StackNavigation
+              stack={store.stack}
+              currentDir={store.currentDir}
+              onNavigate={handleStackNavigation}
+            />
 
             <Spacer />
 
@@ -51,11 +53,7 @@ const App: React.FC<AppProps> = observer(({ store }) => {
           </Flex>
 
           <Box overflowY="scroll" flex="1" marginY={5}>
-            <EntryList
-              isRoot={store.rootDir === store.currentDir}
-              dir={store.currentDir}
-              onDirChange={handleChangeDir}
-            />
+            <EntryList isRoot={store.rootDir === store.currentDir} dir={store.currentDir} />
 
             <Divider />
           </Box>
