@@ -15,7 +15,7 @@ class File {
   }
 
   *download() {
-    yield downloadFile(this)
+    yield downloadFile(this.handle)
   }
 }
 

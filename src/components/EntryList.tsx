@@ -12,7 +12,7 @@ import EntryDir from './EntryDir'
 import { listStyleProps } from './_styles'
 
 interface EntryListProps {
-  isRoot?: boolean
+  isRoot: boolean
   dir: Dir
 }
 
@@ -21,7 +21,7 @@ const EntryList: React.FC<Omit<ListProps, 'dir'> & EntryListProps> = observer(
     const store = useStore()
 
     const handleNavigateUp = () => {
-      if (!dir.parent) throw new Error('Parent dir does not exist...')
+      if (dir.parent === undefined) throw new Error('Parent dir does not exist...')
 
       store.changeDir(dir.parent)
     }

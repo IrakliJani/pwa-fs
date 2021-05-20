@@ -6,7 +6,7 @@ import { getDirEntries } from './_utils'
 class Dir {
   handle: FileSystemDirectoryHandle
   parent?: Dir
-  entries?: Array<Entry>
+  entries?: Entry[]
 
   isOpen: boolean = false
   isExpanded: boolean = false

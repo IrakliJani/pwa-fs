@@ -11,17 +11,13 @@ type EntryFileProps = {
 }
 
 const EntryFile: React.FC<EntryFileProps> = observer(({ file }) => {
-  const handleDownload = () => {
-    file.download()
-  }
-
   return (
     <ListItem {...listStyleProps}>
       <Box boxSize={3.5} marginInlineEnd={2} />
 
       <ListIcon as={FiFile} color="red.500" />
 
-      <Link onClick={handleDownload}>{file.handle.name}</Link>
+      <Link onClick={file.download}>{file.handle.name}</Link>
     </ListItem>
   )
 })

@@ -2,8 +2,8 @@ import Dir from './Dir'
 import File from './File'
 import { Entry } from './Store'
 
-const getDirEntries = async (dir: Dir): Promise<Array<Entry>> => {
-  const entries: Array<Entry> = []
+const getDirEntries = async (dir: Dir): Promise<Entry[]> => {
+  const entries: Entry[] = []
 
   for await (let [, handle] of dir.handle.entries()) {
     if (handle instanceof FileSystemDirectoryHandle) {
@@ -16,14 +16,11 @@ const getDirEntries = async (dir: Dir): Promise<Array<Entry>> => {
   return entries
 }
 
-const downloadFile = async (file: File) => {
-  const fileObject = await file.handle.getFile()
-  const fileName = file.handle.name
-
+const downloadFile = async (handle: FileSystemFileHandle) => {
   const link = document.createElement('a')
-  const url = window.URL.createObjectURL(fileObject)
+  const url = window.URL.createObjectURL(await handle.getFile())
   link.href = url
-  link.setAttribute('download', fileName)
+  link.setAttribute('download', handle.name)
   link.click()
 }
 

@@ -15,17 +15,17 @@ class Store {
   }
 
   get stack() {
-    if (!this.currentDir) return []
+    if (this.currentDir === undefined) throw new Error('Current Dir is not set...')
 
     const stack = [this.currentDir]
     let currentDir = this.currentDir
 
     while (currentDir.parent) {
       currentDir = currentDir.parent
-      stack.push(currentDir)
+      stack.unshift(currentDir)
     }
 
-    return stack.reverse()
+    return stack
   }
 
   changeDir(dir: Dir) {
@@ -42,18 +42,18 @@ class Store {
   }
 
   *goToPath(path: string) {
-    if (!this.rootDir) throw new Error('Root folder does not exist...')
+    if (this.rootDir === undefined) throw new Error('Root Dir is not set...')
 
     const dirNames = path.split('/').filter(Boolean)
     let currentDir = this.rootDir
 
     for (let dirName of dirNames) {
-      const entries: Array<Entry> = yield getDirEntries(currentDir)
+      const entries: Entry[] = yield getDirEntries(currentDir)
       const entry = entries
-        .filter((entry) => entry instanceof Dir)
-        .find((dirEntry) => dirEntry.handle.name === dirName) as Dir
+        .filter((entry): entry is Dir => entry instanceof Dir)
+        .find((dirEntry) => dirEntry.handle.name === dirName)
 
-      if (!entry) throw new Error('Path does not exist...')
+      if (entry === undefined) throw new Error('Path does not exist...')
 
       currentDir = entry
     }

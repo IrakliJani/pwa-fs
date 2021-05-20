@@ -76,7 +76,7 @@ const EntryDir: React.FC<EntryDirProps> = observer(({ dir }) => {
         )}
       </ListItem>
 
-      {dir instanceof Dir && dir.isOpen && <EntryList marginLeft={6} dir={dir} />}
+      {dir instanceof Dir && dir.isOpen && <EntryList isRoot={false} marginLeft={6} dir={dir} />}
     </ExpandedContextProvider>
   )
 })
