@@ -3,7 +3,6 @@ import { observer } from 'mobx-react'
 import { Flex, Box, Spacer, Container, Button, Divider, Text, Link, Icon } from '@chakra-ui/react'
 import { FiExternalLink } from 'react-icons/fi'
 
-import Dir from '../stores/Dir'
 import StackNavigation from './StackNavigation'
 import GoTo from './GoTo'
 import EntryList from './EntryList'
@@ -15,14 +14,6 @@ const App: React.FC = observer(() => {
   const handleOpenFolderDialog = async () => {
     const rootHandle = await window.showDirectoryPicker()
     store.setRootDir(rootHandle)
-  }
-
-  const handleStackNavigation = (dir: Dir) => {
-    store.changeDir(dir)
-  }
-
-  const handleGoTo = (path: string) => {
-    store.goToPath(path)
   }
 
   return (
@@ -43,7 +34,7 @@ const App: React.FC = observer(() => {
             </Link>
           </Text>
         </Flex>
-      ) : !store.currentDir ? (
+      ) : store.currentDir === undefined ? (
         <Flex height="inherit" alignItems="center" justifyContent="center" flexDirection="column">
           <Text textAlign="center">Click "Open Folder" button below to get started...</Text>
 
@@ -55,14 +46,14 @@ const App: React.FC = observer(() => {
         <Flex flexDirection="column" paddingY="5" height="inherit">
           <Flex alignItems="center">
             <StackNavigation
-              stack={store.stack}
+              currentDirStack={store.currentDirStack}
               currentDir={store.currentDir}
-              onNavigate={handleStackNavigation}
+              onNavigate={(dir) => store.changeDir(dir)}
             />
 
             <Spacer />
 
-            <GoTo onSubmit={handleGoTo}>
+            <GoTo onSubmit={(path) => store.goToPath(path)}>
               <Button variant="outline" colorScheme="red" marginLeft={2} size="sm">
                 Go To...
               </Button>

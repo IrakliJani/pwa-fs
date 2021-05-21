@@ -17,7 +17,7 @@ const EntryFile: React.FC<EntryFileProps> = observer(({ file }) => {
 
       <ListIcon as={FiFile} color="red.500" />
 
-      <Link onClick={file.download}>{file.handle.name}</Link>
+      <Link onClick={() => file.download()}>{file.handle.name}</Link>
     </ListItem>
   )
 })

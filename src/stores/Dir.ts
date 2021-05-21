@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx'
+import { makeAutoObservable, runInAction } from 'mobx'
 
 import { Entry } from './Store'
 import { getDirEntries } from './_utils'
@@ -11,11 +11,11 @@ class Dir {
   isOpen: boolean = false
   isExpanded: boolean = false
 
-  constructor(handle: FileSystemDirectoryHandle, dir?: Dir) {
+  constructor(handle: FileSystemDirectoryHandle, parentDir?: Dir) {
     makeAutoObservable(this)
 
     this.handle = handle
-    this.parent = dir
+    this.parent = parentDir
   }
 
   open() {
@@ -37,8 +37,12 @@ class Dir {
     this.isExpanded = false
   }
 
-  *getEntries() {
-    this.entries = yield getDirEntries(this)
+  async getEntries() {
+    const entries = await getDirEntries(this)
+
+    runInAction(() => {
+      this.entries = entries
+    })
   }
 }
 

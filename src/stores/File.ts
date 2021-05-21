@@ -5,17 +5,17 @@ import { downloadFile } from './_utils'
 
 class File {
   handle: FileSystemFileHandle
-  parent?: Dir
+  parent: Dir
 
-  constructor(handle: FileSystemFileHandle, dir?: Dir) {
+  constructor(handle: FileSystemFileHandle, parentDir: Dir) {
     makeAutoObservable(this)
 
     this.handle = handle
-    this.parent = dir
+    this.parent = parentDir
   }
 
-  *download() {
-    yield downloadFile(this.handle)
+  async download() {
+    downloadFile(await this.handle.getFile(), this.handle.name)
   }
 }
 

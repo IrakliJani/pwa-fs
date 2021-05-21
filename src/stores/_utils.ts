@@ -16,11 +16,11 @@ const getDirEntries = async (dir: Dir): Promise<Entry[]> => {
   return entries
 }
 
-const downloadFile = async (handle: FileSystemFileHandle) => {
+const downloadFile = (file: globalThis.File, name: string): void => {
   const link = document.createElement('a')
-  const url = window.URL.createObjectURL(await handle.getFile())
+  const url = window.URL.createObjectURL(file)
   link.href = url
-  link.setAttribute('download', handle.name)
+  link.setAttribute('download', name)
   link.click()
 }
 

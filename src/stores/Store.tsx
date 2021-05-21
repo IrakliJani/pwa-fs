@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx'
+import { makeAutoObservable, runInAction } from 'mobx'
 
 import Dir from './Dir'
 import File from './File'
@@ -14,10 +14,10 @@ class Store {
     makeAutoObservable(this)
   }
 
-  get stack() {
+  get currentDirStack() {
     if (this.currentDir === undefined) throw new Error('Current Dir is not set...')
 
-    const stack = [this.currentDir]
+    const stack = []
     let currentDir = this.currentDir
 
     while (currentDir.parent) {
@@ -41,14 +41,14 @@ class Store {
     this.changeDir(rootDir)
   }
 
-  *goToPath(path: string) {
+  async goToPath(path: string) {
     if (this.rootDir === undefined) throw new Error('Root Dir is not set...')
 
     const dirNames = path.split('/').filter(Boolean)
     let currentDir = this.rootDir
 
     for (let dirName of dirNames) {
-      const entries: Entry[] = yield getDirEntries(currentDir)
+      const entries: Entry[] = await getDirEntries(currentDir)
       const entry = entries
         .filter((entry): entry is Dir => entry instanceof Dir)
         .find((dirEntry) => dirEntry.handle.name === dirName)
@@ -58,7 +58,9 @@ class Store {
       currentDir = entry
     }
 
-    this.changeDir(currentDir)
+    runInAction(() => {
+      this.changeDir(currentDir)
+    })
   }
 }
 

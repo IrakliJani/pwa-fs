@@ -28,7 +28,7 @@ const EntryList: React.FC<Omit<ListProps, 'dir'> & EntryListProps> = observer(
 
     return (
       <List {...listProps}>
-        {!isRoot && !dir.isOpen && dir.parent && (
+        {!isRoot && dir.parent !== undefined && !dir.isOpen && (
           <>
             <Divider />
 
@@ -39,7 +39,7 @@ const EntryList: React.FC<Omit<ListProps, 'dir'> & EntryListProps> = observer(
           </>
         )}
 
-        {!dir.entries ? (
+        {dir.entries === undefined ? (
           <>
             <ListItem>
               <Divider />
@@ -86,22 +86,25 @@ const EntryList: React.FC<Omit<ListProps, 'dir'> & EntryListProps> = observer(
   },
 )
 
-const sortEntries = (aEntry: Entry, bEntry: Entry): number => {
-  const localeResult = aEntry.handle.name.localeCompare(
-    bEntry.handle.name,
-    navigator.languages[0] || navigator.language,
-    {
-      numeric: true,
-    },
-  )
+type Kind = 'directory' | 'file'
+const kindOrder: Record<Kind, number> = {
+  directory: 1,
+  file: 2,
+}
 
-  if (aEntry.handle.kind === bEntry.handle.kind) {
-    return 0 + localeResult
-  } else if (aEntry.handle.kind === 'directory' && bEntry.handle.kind === 'file') {
-    return -10 + localeResult
-  } else {
-    return 10 + localeResult
-  }
+const compareKind = (a: Kind, b: Kind) => {
+  return kindOrder[a] - kindOrder[b]
+}
+
+const compareName = (a: string, b: string) => {
+  return a.localeCompare(b, navigator.languages[0] || navigator.language, { numeric: true })
+}
+
+const sortEntries = (aEntry: Entry, bEntry: Entry): number => {
+  return (
+    compareKind(aEntry.handle.kind, bEntry.handle.kind) ||
+    compareName(aEntry.handle.name, bEntry.handle.name)
+  )
 }
 
 export default EntryList

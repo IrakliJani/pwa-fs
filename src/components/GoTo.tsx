@@ -1,5 +1,4 @@
 import React from 'react'
-
 import {
   useToast,
   Button,
@@ -36,10 +35,7 @@ const GoTo: React.FC<GoToProps> = ({ children, onSubmit }) => {
       await onSubmit(value)
     } catch (e) {
       if (e instanceof Error) {
-        toast({
-          title: `Error: ${e.message}`,
-          status: 'error',
-        })
+        toast({ title: e.message, status: 'error' })
       } else {
         console.error(e)
       }
